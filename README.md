@@ -1,11 +1,11 @@
 
   # Motiva
 
-  This is a code bundle for Motiva. The original project is available at https://www.figma.com/design/KkVqfRCMuCzrpYUM3v0CkU/Motiva.
+  Prototipo feito com Figma
 
-  ## Running the code
+  ## Como rodar o codigo?
 
-  Run `npm i` to install the dependencies.
+  Run `npm i` Instalar as dependencias.
 
-  Run `npm run dev` to start the development server.
+  Run `npm run dev` startar o projeto.
   
