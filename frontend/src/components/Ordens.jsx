@@ -1,0 +1,86 @@
+import React, { useEffect, useState } from 'react';
+
+const CORES_PRIORIDADE = {
+  'URGENTE': { bg: '#fef2f2', border: '#ef4444', badge: '#ef4444', text: '#fff' },
+  'ALTA':    { bg: '#fff7ed', border: '#f97316', badge: '#f97316', text: '#fff' },
+  'MEDIA':   { bg: '#fefce8', border: '#facc15', badge: '#854d0e', text: '#fff' },
+};
+
+export default function Ordens() {
+  const [ordens, setOrdens] = useState([]);
+  const [filtro, setFiltro] = useState('TODOS');
+
+  useEffect(() => {
+    fetch('http://localhost:8000/ordens').then(r => r.json()).then(setOrdens);
+  }, []);
+
+  const filtradas = filtro === 'TODOS' ? ordens : ordens.filter(o => o.prioridade === filtro);
+
+  return (
+    <div>
+      <h1 style={{marginBottom: 8, fontSize: 24}}>Ordens de Serviço</h1>
+      <p style={{color:'#666', marginBottom: 24}}>Geradas automaticamente com base nos dados reais</p>
+
+      <div style={{display:'flex', gap:8, marginBottom:24}}>
+        {['TODOS','URGENTE','ALTA','MEDIA'].map(f => (
+          <button key={f} onClick={() => setFiltro(f)} style={{
+            padding:'8px 20px', borderRadius:8, border:'none', cursor:'pointer',
+            background: filtro === f ? '#1a1a2e' : '#fff',
+            color: filtro === f ? '#4ade80' : '#333',
+            fontWeight: filtro === f ? 700 : 400,
+            boxShadow:'0 2px 6px #0001'
+          }}>
+            {f === 'TODOS' ? 'Todas' : f}
+          </button>
+        ))}
+        <span style={{marginLeft:'auto', color:'#888', alignSelf:'center', fontSize:14}}>
+          {filtradas.length} ordens
+        </span>
+      </div>
+
+      <div style={{display:'grid', gap:16}}>
+        {filtradas.map((o, i) => {
+          const c = CORES_PRIORIDADE[o.prioridade];
+          return (
+            <div key={i} style={{
+              background: c.bg, borderRadius:12, padding:24,
+              boxShadow:'0 2px 8px #0001',
+              borderLeft:`5px solid ${c.border}`
+            }}>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16}}>
+                <div>
+                  <p style={{fontWeight:700, fontSize:18}}>{o.observacao}</p>
+                  <p style={{color:'#666', fontSize:14, marginTop:4}}>{o.area}</p>
+                </div>
+                <span style={{
+                  background: c.badge, color:'#fff',
+                  padding:'6px 14px', borderRadius:8, fontSize:13, fontWeight:700
+                }}>
+                  {o.prioridade}
+                </span>
+              </div>
+
+              <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12}}>
+                {[
+                  { label: 'Prazo', value: o.prazo, icon: '⏱' },
+                  { label: 'Método', value: o.metodo, icon: '🌿' },
+                  { label: 'Equipes', value: `${o.equipes_necessarias} equipe(s)`, icon: '👷' },
+                ].map((item, j) => (
+                  <div key={j} style={{background:'#ffffff88', borderRadius:8, padding:12}}>
+                    <p style={{fontSize:12, color:'#888', marginBottom:4}}>{item.icon} {item.label}</p>
+                    <p style={{fontWeight:600, fontSize:14}}>{item.value}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{marginTop:12, background:'#ffffff88', borderRadius:8, padding:12}}>
+                <p style={{fontSize:12, color:'#888', marginBottom:4}}>🦺 EPI Obrigatório</p>
+                <p style={{fontSize:14, fontWeight:500}}>{o.epi}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
