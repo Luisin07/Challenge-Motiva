@@ -4,6 +4,7 @@ import Ordens from './components/Ordens';
 import Criticos from './components/Criticos';
 import FaunaFlora from './components/FaunaFlora';
 import Conformidade from './components/Conformidade';
+import Resumo from './components/Resumo';
 import './App.css';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
           <button onClick={() => setPagina('ordens')} className={pagina === 'ordens' ? 'ativo' : ''}>Ordens de Serviço</button>
           <button onClick={() => setPagina('fauna')} className={pagina === 'fauna' ? 'ativo' : ''}>Fauna e Flora</button>
           <button onClick={() => setPagina('conformidade')} className={pagina === 'conformidade' ? 'ativo' : ''}>Conformidade</button>
+          <button onClick={() => setPagina('resumo')} className={pagina === 'resumo' ? 'ativo' : ''}>Resumo Executivo</button>
         </div>
       </nav>
       <main className="main-content">
@@ -29,6 +31,7 @@ function App() {
         {pagina === 'ordens' && <Ordens />}
         {pagina === 'fauna' && <FaunaFlora />}
         {pagina === 'conformidade' && <Conformidade />}
+        {pagina === 'resumo' && <Resumo />}
       </main>
     </div>
   );
