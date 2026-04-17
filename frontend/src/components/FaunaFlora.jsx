@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
+import Loading from './Loading';
+
 const CORES_NIVEL = {
   'CRITICO': '#ef4444',
   'ALTO': '#f97316',
@@ -25,7 +27,7 @@ export default function FaunaFlora() {
     fetch('http://localhost:8000/fauna/gbif').then(r => r.json()).then(setGbif);
   }, []);
 
-  if (!status) return <p style={{color:'#888'}}>Carregando...</p>;
+  if (!status) return <Loading />;
 
   return (
     <div>

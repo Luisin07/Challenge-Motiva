@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import Loading from './Loading';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, AreaChart, Area, XAxis, YAxis } from 'recharts';
 
 const CORES = ['#4ade80', '#facc15', '#f97316', '#ef4444'];
@@ -12,7 +13,7 @@ export default function Dashboard() {
     fetch('http://localhost:8000/criticos').then(r => r.json()).then(setCriticos);
   }, []);
 
-  if (!resumo) return <p style={{color:'#888'}}>Carregando...</p>;
+  if (!resumo) return <Loading />;
 
   const niveis = [
     { name: 'Nível 1', value: criticos.filter(t => t.nivel_20 === 1).length },

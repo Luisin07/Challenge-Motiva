@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
+import Loading from './Loading';
+
 const CORES_SITUACAO = {
   'VIOLAÇÃO IMINENTE': { bg: '#fef2f2', border: '#ef4444', badge: '#ef4444' },
   'RISCO DE VIOLAÇÃO': { bg: '#fff7ed', border: '#f97316', badge: '#f97316' },
@@ -12,7 +14,7 @@ export default function Conformidade() {
     fetch('http://localhost:8000/conformidade').then(r => r.json()).then(setDados);
   }, []);
 
-  if (!dados) return <p style={{color:'#888'}}>Carregando...</p>;
+  if (!dados) return <Loading />;
 
   return (
     <div>

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
+import Loading from './Loading';
+
 export default function Resumo() {
   const [resumo, setResumo] = useState(null);
   const [conformidade, setConformidade] = useState(null);
@@ -13,7 +15,7 @@ export default function Resumo() {
     fetch('http://localhost:8000/fauna/status').then(r => r.json()).then(setFauna);
   }, []);
 
-  if (!resumo || !conformidade || !fauna) return <p style={{color:'#888'}}>Carregando...</p>;
+  if (!resumo || !conformidade || !fauna) return <Loading />;
 
   const urgentes = ordens.filter(o => o.prioridade === 'URGENTE').length;
   const altas = ordens.filter(o => o.prioridade === 'ALTA').length;
