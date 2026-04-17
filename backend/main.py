@@ -52,3 +52,9 @@ def fauna_alerta():
 @app.get("/fauna/gbif")
 async def fauna_gbif():
     return await buscar_ocorrencias_gbif()
+
+from services.xlsx_processor import calcular_crescimento, get_resumo, gerar_ordem_servico, get_conformidade
+
+@app.get("/conformidade")
+def conformidade():
+    return get_conformidade()

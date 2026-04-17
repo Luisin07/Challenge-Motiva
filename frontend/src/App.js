@@ -3,6 +3,7 @@ import Dashboard from './components/Dashboard';
 import Ordens from './components/Ordens';
 import Criticos from './components/Criticos';
 import FaunaFlora from './components/FaunaFlora';
+import Conformidade from './components/Conformidade';
 import './App.css';
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <button onClick={() => setPagina('criticos')} className={pagina === 'criticos' ? 'ativo' : ''}>Trechos Críticos</button>
           <button onClick={() => setPagina('ordens')} className={pagina === 'ordens' ? 'ativo' : ''}>Ordens de Serviço</button>
           <button onClick={() => setPagina('fauna')} className={pagina === 'fauna' ? 'ativo' : ''}>Fauna e Flora</button>
+          <button onClick={() => setPagina('conformidade')} className={pagina === 'conformidade' ? 'ativo' : ''}>Conformidade</button>
         </div>
       </nav>
       <main className="main-content">
@@ -26,6 +28,7 @@ function App() {
         {pagina === 'criticos' && <Criticos />}
         {pagina === 'ordens' && <Ordens />}
         {pagina === 'fauna' && <FaunaFlora />}
+        {pagina === 'conformidade' && <Conformidade />}
       </main>
     </div>
   );

@@ -118,3 +118,44 @@ def gerar_ordem_servico():
     ))
 
     return ordens
+
+def get_conformidade():
+    dados = calcular_crescimento()
+    df = pd.DataFrame(dados)
+    
+    urgentes = df[df['nivel_20'] == 3]
+    crescendo = df[df['crescimento'] >= 2]
+    
+    trechos_risco = []
+    
+    for _, row in urgentes.iterrows():
+        trechos_risco.append({
+            'km': row['km'],
+            'area': row['area'],
+            'nivel_atual': int(row['nivel_20']),
+            'situacao': 'VIOLAÇÃO IMINENTE',
+            'motivo': 'Vegetação em nível 3 — acima do limite ARTESP (30cm)',
+            'prazo_legal': '48 horas',
+            'risco_multa': 'ALTO'
+        })
+    
+    for _, row in crescendo.iterrows():
+        if row['nivel_20'] < 3:
+            trechos_risco.append({
+                'km': row['km'],
+                'area': row['area'],
+                'nivel_atual': int(row['nivel_20']),
+                'situacao': 'RISCO DE VIOLAÇÃO',
+                'motivo': 'Crescimento acelerado — pode atingir limite em até 7 dias',
+                'prazo_legal': '7 dias',
+                'risco_multa': 'MEDIO'
+            })
+    
+    return {
+        'total_em_risco': len(trechos_risco),
+        'violacoes_iminentes': len(urgentes),
+        'risco_em_7_dias': len(crescendo[crescendo['nivel_20'] < 3]),
+        'conformidade_geral': round((1 - len(urgentes) / len(df)) * 100, 1),
+        'base_legal': 'ARTESP Anexo 6 + ANTT PER — limite máximo 30cm faixa de domínio',
+        'trechos': trechos_risco
+    }
