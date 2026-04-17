@@ -16,12 +16,27 @@ export default function Ordens() {
 
   const filtradas = filtro === 'TODOS' ? ordens : ordens.filter(o => o.prioridade === filtro);
 
+  const exportarCSV = () => {
+    const headers = ['KM','Area','Nivel Atual','Prioridade','Prazo','Metodo','Equipes','EPI'];
+    const rows = filtradas.map(o => [
+      o.observacao, o.area, o.nivel_atual, o.prioridade,
+      o.prazo, o.metodo, o.equipes_necessarias, o.epi
+    ]);
+    const csv = [headers, ...rows].map(r => r.join(';')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'ordens_servico_greenwatch.csv';
+    a.click();
+  };
+
   return (
     <div>
       <h1 style={{marginBottom: 8, fontSize: 24}}>Ordens de Serviço</h1>
       <p style={{color:'#666', marginBottom: 24}}>Geradas automaticamente com base nos dados reais</p>
 
-      <div style={{display:'flex', gap:8, marginBottom:24}}>
+      <div style={{display:'flex', gap:8, marginBottom:24, flexWrap:'wrap', alignItems:'center'}}>
         {['TODOS','URGENTE','ALTA','MEDIA'].map(f => (
           <button key={f} onClick={() => setFiltro(f)} style={{
             padding:'8px 20px', borderRadius:8, border:'none', cursor:'pointer',
@@ -33,9 +48,16 @@ export default function Ordens() {
             {f === 'TODOS' ? 'Todas' : f}
           </button>
         ))}
-        <span style={{marginLeft:'auto', color:'#888', alignSelf:'center', fontSize:14}}>
+        <span style={{color:'#888', fontSize:14}}>
           {filtradas.length} ordens
         </span>
+        <button onClick={exportarCSV} style={{
+          marginLeft:'auto', padding:'8px 20px', borderRadius:8,
+          background:'#1a1a2e', color:'#4ade80', border:'none',
+          cursor:'pointer', fontWeight:700, fontSize:13
+        }}>
+          ⬇ Exportar CSV
+        </button>
       </div>
 
       <div style={{display:'grid', gap:16}}>
