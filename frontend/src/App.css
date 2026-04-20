@@ -1,57 +1,188 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: #f0f2f5;
+  font-family: 'Inter', sans-serif;
+  background: #f5f5f7;
   color: #1a1a2e;
 }
 
 .navbar {
-  background: #1a1a2e;
-  padding: 16px 32px;
+  background: #6B21FF;
+  padding: 0 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .navbar-brand {
-  color: #4ade80;
-  font-size: 20px;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar-brand-logo {
+  background: #fff;
+  color: #6B21FF;
+  font-weight: 800;
+  font-size: 13px;
+  padding: 6px 10px;
+  border-radius: 8px;
   letter-spacing: 0.5px;
+}
+
+.navbar-brand-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.3px;
 }
 
 .navbar-links {
   display: flex;
-  gap: 12px;
+  gap: 4px;
+  align-items: center;
 }
 
 .navbar-links button {
   background: transparent;
-  border: 1px solid #ffffff30;
-  color: #ffffffaa;
-  padding: 8px 20px;
+  border: none;
+  color: #ffffffbb;
+  padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.15s;
+  position: relative;
 }
 
 .navbar-links button:hover {
-  background: #ffffff15;
+  background: #ffffff20;
   color: #fff;
 }
 
 .navbar-links button.ativo {
-  background: #4ade80;
-  color: #1a1a2e;
-  border-color: #4ade80;
-  font-weight: 600;
+  background: #fff;
+  color: #6B21FF;
+  font-weight: 700;
 }
 
 .main-content {
-  padding: 32px;
+  padding: 40px;
   max-width: 1400px;
   margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 32px;
+}
+
+.page-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: #888;
+}
+
+.card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-block;
+}
+
+.badge-critico  { background: #fef2f2; color: #ef4444; }
+.badge-alto     { background: #fff7ed; color: #f97316; }
+.badge-medio    { background: #fefce8; color: #ca8a04; }
+.badge-baixo    { background: #f0fdf4; color: #16a34a; }
+
+.badge-urgente  { background: #ef4444; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+.badge-alta-os  { background: #f97316; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+.badge-media-os { background: #facc15; color: #854d0e; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+
+.nivel-1 { color: #16a34a; font-weight: 700; }
+.nivel-2 { color: #ca8a04; font-weight: 700; }
+.nivel-3 { color: #ef4444; font-weight: 700; }
+
+.crescendo { background: #fef9c3; color: #854d0e; padding: 3px 8px; border-radius: 5px; font-size: 12px; font-weight: 600; }
+
+.btn-primary {
+  background: #6B21FF;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: background 0.15s;
+}
+
+.btn-primary:hover { background: #5a1adb; }
+
+.btn-outline {
+  background: transparent;
+  color: #6B21FF;
+  border: 1.5px solid #6B21FF;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.15s;
+}
+
+.btn-outline:hover { background: #6B21FF; color: #fff; }
+
+.filter-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-btn {
+  padding: 7px 16px;
+  border-radius: 8px;
+  border: 1.5px solid #e5e5e5;
+  background: #fff;
+  color: #555;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: all 0.15s;
+}
+
+.filter-btn:hover { border-color: #6B21FF; color: #6B21FF; }
+.filter-btn.ativo { background: #6B21FF; color: #fff; border-color: #6B21FF; font-weight: 600; }
+
+.count-label {
+  margin-left: auto;
+  color: #888;
+  font-size: 13px;
+  align-self: center;
 }

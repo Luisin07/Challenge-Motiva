@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
-const CORES_NIVEL = { 1: '#4ade80', 2: '#facc15', 3: '#ef4444' };
+import Loading from './Loading';
 
 export default function Criticos() {
   const [criticos, setCriticos] = useState([]);
@@ -11,70 +10,65 @@ export default function Criticos() {
     fetch('http://localhost:8000/criticos').then(r => r.json()).then(setCriticos);
   }, []);
 
+  if (!criticos.length) return <Loading />;
+
   const areas = ['TODAS', ...new Set(criticos.map(t => t.area))];
 
   const filtrados = criticos
     .filter(t => filtroNivel === 'TODOS' || t.nivel_20 === parseInt(filtroNivel))
     .filter(t => filtroArea === 'TODAS' || t.area === filtroArea);
 
+  const corNivel = { 1: '#16a34a', 2: '#ca8a04', 3: '#ef4444' };
+  const bgNivel  = { 1: '#f0fdf4', 2: '#fefce8', 3: '#fef2f2' };
+
   return (
     <div>
-      <h1 style={{marginBottom: 8, fontSize: 24}}>Trechos Críticos</h1>
-      <p style={{color:'#666', marginBottom: 24}}>Trechos que requerem intervenção imediata</p>
+      <div className="page-header">
+        <h1 className="page-title">Trechos Críticos</h1>
+        <p className="page-subtitle">Trechos que requerem intervenção imediata</p>
+      </div>
 
-      <div style={{display:'flex', gap:8, marginBottom:12, flexWrap:'wrap'}}>
+      <div className="filter-bar">
         {['TODOS', '2', '3'].map(f => (
-          <button key={f} onClick={() => setFiltroNivel(f)} style={{
-            padding:'8px 20px', borderRadius:8, border:'none', cursor:'pointer',
-            background: filtroNivel === f ? '#1a1a2e' : '#fff',
-            color: filtroNivel === f ? '#4ade80' : '#333',
-            fontWeight: filtroNivel === f ? 700 : 400,
-            boxShadow:'0 2px 6px #0001'
-          }}>
+          <button key={f} className={`filter-btn ${filtroNivel === f ? 'ativo' : ''}`}
+            onClick={() => setFiltroNivel(f)}>
             {f === 'TODOS' ? 'Todos os níveis' : `Nível ${f}`}
           </button>
         ))}
       </div>
 
-      <div style={{display:'flex', gap:8, marginBottom:24, flexWrap:'wrap'}}>
+      <div className="filter-bar">
         {areas.map(a => (
-          <button key={a} onClick={() => setFiltroArea(a)} style={{
-            padding:'6px 14px', borderRadius:8, border:'none', cursor:'pointer',
-            background: filtroArea === a ? '#1a1a2e' : '#f0f0f0',
-            color: filtroArea === a ? '#4ade80' : '#555',
-            fontWeight: filtroArea === a ? 700 : 400,
-            fontSize: 13
-          }}>
+          <button key={a} className={`filter-btn ${filtroArea === a ? 'ativo' : ''}`}
+            onClick={() => setFiltroArea(a)}>
             {a === 'TODAS' ? 'Todas as áreas' : a}
           </button>
         ))}
-        <span style={{marginLeft:'auto', color:'#888', alignSelf:'center', fontSize:14}}>
-          {filtrados.length} trechos encontrados
-        </span>
+        <span className="count-label">{filtrados.length} trechos encontrados</span>
       </div>
 
       <div style={{display:'grid', gap:12}}>
         {filtrados.map((t, i) => (
           <div key={i} style={{
             background:'#fff', borderRadius:12, padding:20,
-            boxShadow:'0 2px 8px #0001',
-            borderLeft:`5px solid ${CORES_NIVEL[t.nivel_20]}`
+            boxShadow:'0 1px 4px rgba(0,0,0,0.06)',
+            borderLeft:`4px solid ${corNivel[t.nivel_20]}`
           }}>
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
               <div>
-                <p style={{fontWeight:700, fontSize:16}}>KM {(t.km/1000).toFixed(1).replace('.','+')}</p>
-                <p style={{color:'#666', fontSize:14, marginTop:4}}>{t.area}</p>
+                <p style={{fontWeight:700, fontSize:16}}>
+                  KM {(t.km/1000).toFixed(1).replace('.','+')}</p>
+                <p style={{color:'#888', fontSize:13, marginTop:3}}>{t.area}</p>
               </div>
               <div style={{display:'flex', gap:8, alignItems:'center'}}>
                 {t.crescimento > 0 && (
-                  <span style={{background:'#fef3c7', color:'#92400e', padding:'4px 10px', borderRadius:6, fontSize:12, fontWeight:600}}>
-                    ↑ Crescendo
-                  </span>
+                  <span className="crescendo">↑ Crescendo</span>
                 )}
                 <span style={{
-                  background: CORES_NIVEL[t.nivel_20] + '22',
-                  color: CORES_NIVEL[t.nivel_20],
-                  padding:'4px 12px', borderRadius:6, fontSize:13, fontWeight:700
+                  background: bgNivel[t.nivel_20],
+                  color: corNivel[t.nivel_20],
+                  padding:'4px 12px', borderRadius:6,
+                  fontSize:13, fontWeight:700
                 }}>
                   Nível {t.nivel_20}
                 </span>
@@ -82,7 +76,11 @@ export default function Criticos() {
             </div>
             <div style={{display:'flex', gap:24, marginTop:12, fontSize:13, color:'#888'}}>
               <span>Nível anterior: <b style={{color:'#333'}}>{t.nivel_13}</b></span>
-              <span>Crescimento: <b style={{color: t.crescimento > 0 ? '#ef4444' : '#4ade80'}}>{t.crescimento > 0 ? '+'+t.crescimento : t.crescimento}</b></span>
+              <span>Crescimento:
+                <b style={{color: t.crescimento > 0 ? '#ef4444' : '#16a34a', marginLeft:4}}>
+                  {t.crescimento > 0 ? '+'+t.crescimento : t.crescimento}
+                </b>
+              </span>
             </div>
           </div>
         ))}

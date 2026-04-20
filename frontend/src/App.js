@@ -18,7 +18,7 @@ function App() {
   }, []);
 
   const btn = (id, label, badge) => (
-    <button onClick={() => setPagina(id)} className={pagina === id ? 'ativo' : ''} style={{position:'relative'}}>
+    <button onClick={() => setPagina(id)} className={pagina === id ? 'ativo' : ''}>
       {label}
       {badge > 0 && (
         <span style={{
@@ -35,9 +35,12 @@ function App() {
   );
 
   return (
-    <div className="app">
+    <div>
       <nav className="navbar">
-        <div className="navbar-brand">🌿 GreenWatch — Motiva</div>
+        <div className="navbar-brand">
+          <span className="navbar-brand-logo">VT</span>
+          <span className="navbar-brand-name">VegeTrack</span>
+        </div>
         <div className="navbar-links">
           {btn('dashboard', 'Dashboard', 0)}
           {btn('criticos', 'Trechos Críticos', 0)}

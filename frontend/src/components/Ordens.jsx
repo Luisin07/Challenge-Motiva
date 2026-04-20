@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from 'react';
-
-const CORES_PRIORIDADE = {
-  'URGENTE': { bg: '#fef2f2', border: '#ef4444', badge: '#ef4444', text: '#fff' },
-  'ALTA':    { bg: '#fff7ed', border: '#f97316', badge: '#f97316', text: '#fff' },
-  'MEDIA':   { bg: '#fefce8', border: '#facc15', badge: '#854d0e', text: '#fff' },
-};
+import Loading from './Loading';
 
 export default function Ordens() {
   const [ordens, setOrdens] = useState([]);
@@ -13,6 +8,8 @@ export default function Ordens() {
   useEffect(() => {
     fetch('http://localhost:8000/ordens').then(r => r.json()).then(setOrdens);
   }, []);
+
+  if (!ordens.length) return <Loading />;
 
   const filtradas = filtro === 'TODOS' ? ordens : ordens.filter(o => o.prioridade === filtro);
 
@@ -27,76 +24,75 @@ export default function Ordens() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'ordens_servico_greenwatch.csv';
+    a.download = 'ordens_servico_vegetrack.csv';
     a.click();
+  };
+
+  const ESTILOS = {
+    'URGENTE': { bg: '#fef2f2', border: '#ef4444', badgeBg: '#ef4444', badgeColor: '#fff' },
+    'ALTA':    { bg: '#fff7ed', border: '#f97316', badgeBg: '#f97316', badgeColor: '#fff' },
+    'MEDIA':   { bg: '#fefce8', border: '#ca8a04', badgeBg: '#fefce8', badgeColor: '#854d0e' },
   };
 
   return (
     <div>
-      <h1 style={{marginBottom: 8, fontSize: 24}}>Ordens de Serviço</h1>
-      <p style={{color:'#666', marginBottom: 24}}>Geradas automaticamente com base nos dados reais</p>
+      <div className="page-header">
+        <h1 className="page-title">Ordens de Serviço</h1>
+        <p className="page-subtitle">Geradas automaticamente com base nos dados reais</p>
+      </div>
 
-      <div style={{display:'flex', gap:8, marginBottom:24, flexWrap:'wrap', alignItems:'center'}}>
+      <div className="filter-bar">
         {['TODOS','URGENTE','ALTA','MEDIA'].map(f => (
-          <button key={f} onClick={() => setFiltro(f)} style={{
-            padding:'8px 20px', borderRadius:8, border:'none', cursor:'pointer',
-            background: filtro === f ? '#1a1a2e' : '#fff',
-            color: filtro === f ? '#4ade80' : '#333',
-            fontWeight: filtro === f ? 700 : 400,
-            boxShadow:'0 2px 6px #0001'
-          }}>
+          <button key={f} className={`filter-btn ${filtro === f ? 'ativo' : ''}`}
+            onClick={() => setFiltro(f)}>
             {f === 'TODOS' ? 'Todas' : f}
           </button>
         ))}
-        <span style={{color:'#888', fontSize:14}}>
-          {filtradas.length} ordens
-        </span>
-        <button onClick={exportarCSV} style={{
-          marginLeft:'auto', padding:'8px 20px', borderRadius:8,
-          background:'#1a1a2e', color:'#4ade80', border:'none',
-          cursor:'pointer', fontWeight:700, fontSize:13
-        }}>
+        <span className="count-label">{filtradas.length} ordens</span>
+        <button className="btn-primary" onClick={exportarCSV} style={{marginLeft:'auto'}}>
           ⬇ Exportar CSV
         </button>
       </div>
 
       <div style={{display:'grid', gap:16}}>
         {filtradas.map((o, i) => {
-          const c = CORES_PRIORIDADE[o.prioridade];
+          const e = ESTILOS[o.prioridade];
           return (
             <div key={i} style={{
-              background: c.bg, borderRadius:12, padding:24,
-              boxShadow:'0 2px 8px #0001',
-              borderLeft:`5px solid ${c.border}`
+              background: e.bg, borderRadius:12, padding:24,
+              boxShadow:'0 1px 4px rgba(0,0,0,0.06)',
+              borderLeft:`4px solid ${e.border}`
             }}>
               <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16}}>
                 <div>
-                  <p style={{fontWeight:700, fontSize:18}}>{o.observacao}</p>
-                  <p style={{color:'#666', fontSize:14, marginTop:4}}>{o.area}</p>
+                  <p style={{fontWeight:700, fontSize:17}}>{o.observacao}</p>
+                  <p style={{color:'#888', fontSize:13, marginTop:4}}>{o.area}</p>
                 </div>
                 <span style={{
-                  background: c.badge, color:'#fff',
-                  padding:'6px 14px', borderRadius:8, fontSize:13, fontWeight:700
+                  background: e.badgeBg, color: e.badgeColor,
+                  padding:'5px 14px', borderRadius:8,
+                  fontSize:12, fontWeight:700,
+                  border: o.prioridade === 'MEDIA' ? '1.5px solid #ca8a04' : 'none'
                 }}>
                   {o.prioridade}
                 </span>
               </div>
 
-              <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12}}>
+              <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12, marginBottom:12}}>
                 {[
                   { label: 'Prazo', value: o.prazo, icon: '⏱' },
                   { label: 'Método', value: o.metodo, icon: '🌿' },
                   { label: 'Equipes', value: `${o.equipes_necessarias} equipe(s)`, icon: '👷' },
                 ].map((item, j) => (
-                  <div key={j} style={{background:'#ffffff88', borderRadius:8, padding:12}}>
-                    <p style={{fontSize:12, color:'#888', marginBottom:4}}>{item.icon} {item.label}</p>
+                  <div key={j} style={{background:'#ffffff99', borderRadius:8, padding:12}}>
+                    <p style={{fontSize:11, color:'#888', marginBottom:4}}>{item.icon} {item.label}</p>
                     <p style={{fontWeight:600, fontSize:14}}>{item.value}</p>
                   </div>
                 ))}
               </div>
 
-              <div style={{marginTop:12, background:'#ffffff88', borderRadius:8, padding:12}}>
-                <p style={{fontSize:12, color:'#888', marginBottom:4}}>🦺 EPI Obrigatório</p>
+              <div style={{background:'#ffffff99', borderRadius:8, padding:12}}>
+                <p style={{fontSize:11, color:'#888', marginBottom:4}}>🦺 EPI Obrigatório</p>
                 <p style={{fontSize:14, fontWeight:500}}>{o.epi}</p>
               </div>
             </div>
