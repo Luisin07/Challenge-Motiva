@@ -54,19 +54,21 @@ export default function Ordens() {
         </button>
       </div>
 
-      <div style={{display:'grid', gap:16}}>
+      <div style={{display:'grid', gap:12}}>
         {filtradas.map((o, i) => {
           const e = ESTILOS[o.prioridade];
           return (
             <div key={i} style={{
-              background: e.bg, borderRadius:12, padding:24,
+              background: e.bg,
+              borderRadius:12,
+              padding:'20px 24px',
               boxShadow:'0 1px 4px rgba(0,0,0,0.06)',
               borderLeft:`4px solid ${e.border}`
             }}>
-              <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:16}}>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14}}>
                 <div>
-                  <p style={{fontWeight:700, fontSize:17}}>{o.observacao}</p>
-                  <p style={{color:'#888', fontSize:13, marginTop:4}}>{o.area}</p>
+                  <p style={{fontWeight:700, fontSize:16}}>{o.observacao}</p>
+                  <p style={{color:'#888', fontSize:13, marginTop:3}}>{o.area}</p>
                 </div>
                 <span style={{
                   background: e.badgeBg, color: e.badgeColor,
@@ -78,22 +80,24 @@ export default function Ordens() {
                 </span>
               </div>
 
-              <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12, marginBottom:12}}>
-                {[
-                  { label: 'Prazo', value: o.prazo, icon: '⏱' },
-                  { label: 'Método', value: o.metodo, icon: '🌿' },
-                  { label: 'Equipes', value: `${o.equipes_necessarias} equipe(s)`, icon: '👷' },
-                ].map((item, j) => (
-                  <div key={j} style={{background:'#ffffff99', borderRadius:8, padding:12}}>
-                    <p style={{fontSize:11, color:'#888', marginBottom:4}}>{item.icon} {item.label}</p>
-                    <p style={{fontWeight:600, fontSize:14}}>{item.value}</p>
-                  </div>
-                ))}
+              <div style={{display:'flex', gap:32, marginBottom:12, flexWrap:'wrap'}}>
+                <div>
+                  <p style={{fontSize:11, color:'#888', marginBottom:2}}>⏱ Prazo</p>
+                  <p style={{fontWeight:700, fontSize:14, color:'#1a1a2e'}}>{o.prazo}</p>
+                </div>
+                <div>
+                  <p style={{fontSize:11, color:'#888', marginBottom:2}}>🌿 Método</p>
+                  <p style={{fontWeight:700, fontSize:14, color:'#1a1a2e'}}>{o.metodo}</p>
+                </div>
+                <div>
+                  <p style={{fontSize:11, color:'#888', marginBottom:2}}>👷 Equipes</p>
+                  <p style={{fontWeight:700, fontSize:14, color:'#1a1a2e'}}>{o.equipes_necessarias} equipe(s)</p>
+                </div>
               </div>
 
-              <div style={{background:'#ffffff99', borderRadius:8, padding:12}}>
+              <div style={{borderTop:`1px solid ${e.border}22`, paddingTop:12}}>
                 <p style={{fontSize:11, color:'#888', marginBottom:4}}>🦺 EPI Obrigatório</p>
-                <p style={{fontSize:14, fontWeight:500}}>{o.epi}</p>
+                <p style={{fontSize:13, fontWeight:500, color:'#333'}}>{o.epi}</p>
               </div>
             </div>
           );

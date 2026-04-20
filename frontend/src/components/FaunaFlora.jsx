@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from 'react';
 
-import Loading from './Loading';
-
 const CORES_NIVEL = {
   'CRITICO': '#ef4444',
   'ALTO': '#f97316',
@@ -27,12 +25,14 @@ export default function FaunaFlora() {
     fetch('http://localhost:8000/fauna/gbif').then(r => r.json()).then(setGbif);
   }, []);
 
-  if (!status) return <Loading />;
+  if (!status) return <p style={{color:'#888'}}>Carregando...</p>;
 
   return (
     <div>
-      <h1 style={{marginBottom: 8, fontSize: 24}}>Fauna e Flora</h1>
-      <p style={{color:'#666', marginBottom: 32}}>Monitoramento ambiental — Bioma Mata Atlântica · Rodoanel Mário Covas</p>
+      <div className="page-header">
+        <h1 className="page-title">Fauna e Flora</h1>
+        <p className="page-subtitle">Bioma Mata Atlântica · Dados científicos reais via GBIF</p>
+      </div>
 
       <div style={{
         background: CORES_NIVEL[status.restricao.nivel] + '22',
@@ -70,8 +70,8 @@ export default function FaunaFlora() {
         )}
       </div>
 
-      <div style={{background:'#fff', borderRadius:12, padding:24, marginBottom:32, boxShadow:'0 2px 8px #0001'}}>
-        <h3 style={{marginBottom:16}}>Calendário de Restrições Ambientais</h3>
+      <div style={{background:'#fff', borderRadius:12, padding:24, marginBottom:32, boxShadow:'0 1px 4px rgba(0,0,0,0.06)'}}>
+        <h3 style={{marginBottom:16, fontWeight:700, fontSize:15}}>Calendário de Restrições Ambientais</h3>
         <div style={{display:'grid', gridTemplateColumns:'repeat(12,1fr)', gap:6}}>
           {calendario.map((c, i) => (
             <div key={i} style={{
@@ -86,13 +86,13 @@ export default function FaunaFlora() {
         </div>
       </div>
 
-      <h3 style={{marginBottom:16}}>Espécies Monitoradas</h3>
+      <h3 style={{marginBottom:16, fontWeight:700, fontSize:15}}>Espécies Monitoradas</h3>
       <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:32}}>
         {especies.map((e, i) => (
           <div key={i} style={{
             background:'#fff', borderRadius:12, padding:20,
-            boxShadow:'0 2px 8px #0001',
-            borderLeft:`5px solid ${CORES_NIVEL[e.risco]}`
+            boxShadow:'0 1px 4px rgba(0,0,0,0.06)',
+            borderLeft:`4px solid ${CORES_NIVEL[e.risco]}`
           }}>
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:8}}>
               <div>
@@ -133,15 +133,15 @@ export default function FaunaFlora() {
 
       {gbif && (
         <div style={{marginTop:32}}>
-          <h3 style={{marginBottom:8}}>Avistamentos Reais — GBIF</h3>
-          <p style={{color:'#666', fontSize:13, marginBottom:16}}>
-            {gbif.total} ocorrências reais · {gbif.area_monitorada} · Fonte: {gbif.fonte}
+          <h3 style={{marginBottom:8, fontWeight:700, fontSize:15}}>Avistamentos Reais — GBIF</h3>
+          <p style={{color:'#aaa', fontSize:13, marginBottom:16}}>
+            {gbif.total} ocorrências · {gbif.area_monitorada} · Fonte: {gbif.fonte}
           </p>
           <div style={{display:'grid', gap:10}}>
             {gbif.ocorrencias.map((o, i) => (
               <div key={i} style={{
                 background:'#fff', borderRadius:10, padding:16,
-                boxShadow:'0 2px 6px #0001',
+                boxShadow:'0 1px 4px rgba(0,0,0,0.06)',
                 display:'flex', justifyContent:'space-between', alignItems:'center'
               }}>
                 <div>
@@ -151,8 +151,9 @@ export default function FaunaFlora() {
                   </p>
                 </div>
                 <a href={o.link} target="_blank" rel="noreferrer" style={{
-                  fontSize:12, color:'#3b82f6', textDecoration:'none',
-                  border:'1px solid #3b82f6', padding:'4px 10px', borderRadius:6
+                  fontSize:12, color:'#5B0FBE', textDecoration:'none',
+                  border:'1px solid #5B0FBE', padding:'4px 10px', borderRadius:6,
+                  fontWeight:600
                 }}>
                   Ver no GBIF
                 </a>

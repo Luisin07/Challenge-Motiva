@@ -9,7 +9,7 @@ body {
 }
 
 .navbar {
-  background: #6B21FF;
+  background: #5B0FBE;
   padding: 0 40px;
   display: flex;
   align-items: center;
@@ -28,7 +28,7 @@ body {
 
 .navbar-brand-logo {
   background: #fff;
-  color: #6B21FF;
+  color: #5B0FBE;
   font-weight: 800;
   font-size: 13px;
   padding: 6px 10px;
@@ -70,8 +70,20 @@ body {
 
 .navbar-links button.ativo {
   background: #fff;
-  color: #6B21FF;
+  color: #5B0FBE;
   font-weight: 700;
+}
+
+.navbar-links button.ativo::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background: #fff;
+  border-radius: 2px;
 }
 
 .main-content {
@@ -85,15 +97,17 @@ body {
 }
 
 .page-title {
-  font-size: 26px;
+  font-size: 28px;
   font-weight: 800;
   color: #1a1a2e;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  letter-spacing: -0.5px;
 }
 
 .page-subtitle {
-  font-size: 14px;
-  color: #888;
+  font-size: 13px;
+  color: #aaa;
+  font-weight: 400;
 }
 
 .card {
@@ -103,31 +117,20 @@ body {
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
-.badge {
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  display: inline-block;
-}
-
+.badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; display: inline-block; }
 .badge-critico  { background: #fef2f2; color: #ef4444; }
 .badge-alto     { background: #fff7ed; color: #f97316; }
 .badge-medio    { background: #fefce8; color: #ca8a04; }
 .badge-baixo    { background: #f0fdf4; color: #16a34a; }
 
-.badge-urgente  { background: #ef4444; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; }
-.badge-alta-os  { background: #f97316; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; }
-.badge-media-os { background: #facc15; color: #854d0e; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; }
-
 .nivel-1 { color: #16a34a; font-weight: 700; }
 .nivel-2 { color: #ca8a04; font-weight: 700; }
 .nivel-3 { color: #ef4444; font-weight: 700; }
 
-.crescendo { background: #fef9c3; color: #854d0e; padding: 3px 8px; border-radius: 5px; font-size: 12px; font-weight: 600; }
+.crescendo { background: #f0fdf4; color: #16a34a; padding: 3px 8px; border-radius: 5px; font-size: 12px; font-weight: 600; }
 
 .btn-primary {
-  background: #6B21FF;
+  background: #5B0FBE;
   color: #fff;
   border: none;
   padding: 10px 20px;
@@ -139,12 +142,12 @@ body {
   transition: background 0.15s;
 }
 
-.btn-primary:hover { background: #5a1adb; }
+.btn-primary:hover { background: #4a0da0; }
 
 .btn-outline {
   background: transparent;
-  color: #6B21FF;
-  border: 1.5px solid #6B21FF;
+  color: #5B0FBE;
+  border: 1.5px solid #5B0FBE;
   padding: 8px 18px;
   border-radius: 8px;
   font-size: 13px;
@@ -154,7 +157,7 @@ body {
   transition: all 0.15s;
 }
 
-.btn-outline:hover { background: #6B21FF; color: #fff; }
+.btn-outline:hover { background: #5B0FBE; color: #fff; }
 
 .filter-bar {
   display: flex;
@@ -177,8 +180,8 @@ body {
   transition: all 0.15s;
 }
 
-.filter-btn:hover { border-color: #6B21FF; color: #6B21FF; }
-.filter-btn.ativo { background: #6B21FF; color: #fff; border-color: #6B21FF; font-weight: 600; }
+.filter-btn:hover { border-color: #5B0FBE; color: #5B0FBE; }
+.filter-btn.ativo { background: #5B0FBE; color: #fff; border-color: #5B0FBE; font-weight: 600; }
 
 .count-label {
   margin-left: auto;
