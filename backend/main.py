@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from services.xlsx_processor import calcular_crescimento, get_resumo, gerar_ordem_servico
+from services.xlsx_processor import calcular_crescimento, get_resumo, gerar_ordem_servico, get_conformidade
 from services.fauna_flora import get_status_atual, get_todas_especies, get_calendario, get_alerta_os
 from services.gbif_service import buscar_ocorrencias_gbif
+from services.mapa_service import get_trechos_mapa, get_marcos_km, get_pontos_criticos_mapa
 
-app = FastAPI(title="Challenge Motiva API")
+app = FastAPI(title="VegeTrack API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -15,7 +16,7 @@ app.add_middleware(
 
 @app.get("/")
 def root():
-    return {"status": "GreenWatch API rodando"}
+    return {"status": "VegeTrack API rodando"}
 
 @app.get("/resumo")
 def resumo():
@@ -32,6 +33,10 @@ def criticos():
 @app.get("/ordens")
 def ordens():
     return gerar_ordem_servico()
+
+@app.get("/conformidade")
+def conformidade():
+    return get_conformidade()
 
 @app.get("/fauna/status")
 def fauna_status():
@@ -53,8 +58,14 @@ def fauna_alerta():
 async def fauna_gbif():
     return await buscar_ocorrencias_gbif()
 
-from services.xlsx_processor import calcular_crescimento, get_resumo, gerar_ordem_servico, get_conformidade
+@app.get("/mapa/trechos")
+def mapa_trechos():
+    return get_trechos_mapa()
 
-@app.get("/conformidade")
-def conformidade():
-    return get_conformidade()
+@app.get("/mapa/marcos")
+def mapa_marcos():
+    return get_marcos_km()
+
+@app.get("/mapa/pontos")
+def mapa_pontos():
+    return get_pontos_criticos_mapa()

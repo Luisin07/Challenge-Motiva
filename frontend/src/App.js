@@ -51,7 +51,7 @@ function App() {
         </div>
       </nav>
       <main className="main-content">
-        {pagina === 'dashboard' && <Dashboard />}
+        {pagina === 'dashboard' && <Dashboard setPagina={setPagina} />}
         {pagina === 'criticos' && <Criticos />}
         {pagina === 'ordens' && <Ordens />}
         {pagina === 'fauna' && <FaunaFlora />}
