@@ -10,12 +10,24 @@ import './App.css';
 function App() {
   const [pagina, setPagina] = useState('dashboard');
   const [violacoes, setViolacoes] = useState(0);
+  const [filtroMapa, setFiltroMapa] = useState(null);
+  const [filtroOrdem, setFiltroOrdem] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:8000/conformidade')
       .then(r => r.json())
       .then(d => setViolacoes(d.violacoes_iminentes));
   }, []);
+
+  const navegarParaTrecho = (nivel, area) => {
+    setFiltroMapa({ nivel, area });
+    setPagina('criticos');
+  };
+
+  const navegarParaOrdem = (km) => {
+    setFiltroOrdem(km);
+    setPagina('ordens');
+  };
 
   const btn = (id, label, badge) => (
     <button onClick={() => setPagina(id)} className={pagina === id ? 'ativo' : ''}>
@@ -51,9 +63,9 @@ function App() {
         </div>
       </nav>
       <main className="main-content">
-        {pagina === 'dashboard' && <Dashboard setPagina={setPagina} />}
-        {pagina === 'criticos' && <Criticos />}
-        {pagina === 'ordens' && <Ordens />}
+        {pagina === 'dashboard' && <Dashboard setPagina={setPagina} navegarParaTrecho={navegarParaTrecho} navegarParaOrdem={navegarParaOrdem} />}
+        {pagina === 'criticos' && <Criticos filtroInicial={filtroMapa} onClear={() => setFiltroMapa(null)} />}
+        {pagina === 'ordens' && <Ordens filtroKm={filtroOrdem} onClear={() => setFiltroOrdem(null)} />}
         {pagina === 'fauna' && <FaunaFlora />}
         {pagina === 'conformidade' && <Conformidade />}
         {pagina === 'resumo' && <Resumo />}

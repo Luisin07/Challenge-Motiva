@@ -4,7 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineCh
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
-export default function Dashboard({ setPagina }) {
+export default function Dashboard({ setPagina, navegarParaTrecho, navegarParaOrdem }) {
   const [resumo, setResumo] = useState(null);
   const [criticos, setCriticos] = useState([]);
   const [conformidade, setConformidade] = useState(null);
@@ -149,8 +149,8 @@ export default function Dashboard({ setPagina }) {
             </div>
           </div>
           <MapContainer
-            center={[-23.52, -46.78]}
-            zoom={11}
+            center={[-23.53, -46.80]}
+            zoom={12}
             style={{height:'380px', width:'100%'}}
             scrollWheelZoom={true}
           >
@@ -171,34 +171,34 @@ export default function Dashboard({ setPagina }) {
                 }}
               >
                 <Popup>
-                  <div style={{minWidth:170, fontFamily:'Inter, sans-serif'}}>
-                    <p style={{fontWeight:700, fontSize:14, margin:'0 0 6px', color:'#1a1a2e'}}>
-                      {labelNivel(p.nivel)}
-                    </p>
-                    <p style={{fontSize:12, color:'#888', margin:'0 0 12px'}}>
-                      Área de roçada monitorada
-                    </p>
-                    <div style={{display:'flex', gap:6}}>
-                      <button onClick={() => setPagina('criticos')} style={{
-                        background:'#5B0FBE', color:'#fff', border:'none',
-                        padding:'6px 10px', borderRadius:6, fontSize:11,
-                        fontWeight:600, cursor:'pointer', flex:1
-                      }}>
-                        Ver trechos
-                      </button>
-                      {p.nivel >= 2 && (
-                        <button onClick={() => setPagina('ordens')} style={{
-                          background: p.nivel === 3 ? '#ef4444' : '#ca8a04',
-                          color:'#fff', border:'none',
-                          padding:'6px 10px', borderRadius:6, fontSize:11,
-                          fontWeight:600, cursor:'pointer', flex:1
-                        }}>
-                          Ver OS
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </Popup>
+  <div style={{minWidth:180, fontFamily:'Inter, sans-serif'}}>
+    <p style={{fontWeight:700, fontSize:14, margin:'0 0 4px', color:'#1a1a2e'}}>
+      {labelNivel(p.nivel)}
+    </p>
+    <p style={{fontSize:11, color:'#888', margin:'0 0 12px'}}>
+      Clique para ver os trechos filtrados
+    </p>
+    <div style={{display:'flex', flexDirection:'column', gap:6}}>
+      <button onClick={() => navegarParaTrecho(p.nivel, null)} style={{
+        background:'#5B0FBE', color:'#fff', border:'none',
+        padding:'7px 10px', borderRadius:6, fontSize:11,
+        fontWeight:600, cursor:'pointer', width:'100%'
+      }}>
+        🗂 Ver todos de nível {p.nivel}
+      </button>
+      {p.nivel >= 2 && (
+  <button onClick={() => navegarParaOrdem(p.nivel)} style={{
+    background: p.nivel === 3 ? '#ef4444' : '#ca8a04',
+    color:'#fff', border:'none',
+    padding:'7px 10px', borderRadius:6, fontSize:11,
+    fontWeight:600, cursor:'pointer', width:'100%'
+  }}>
+    📋 Ver ordens de serviço
+  </button>
+)}
+    </div>
+  </div>
+</Popup>
               </CircleMarker>
             ))}
           </MapContainer>

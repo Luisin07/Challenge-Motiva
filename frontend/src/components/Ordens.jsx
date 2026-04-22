@@ -1,17 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import Loading from './Loading';
 
-export default function Ordens() {
+export default function Ordens({ filtroKm, onClear }) {
   const [ordens, setOrdens] = useState([]);
   const [filtro, setFiltro] = useState('TODOS');
 
   useEffect(() => {
     fetch('http://localhost:8000/ordens').then(r => r.json()).then(setOrdens);
   }, []);
-
-  if (!ordens.length) return <Loading />;
-
-  const filtradas = filtro === 'TODOS' ? ordens : ordens.filter(o => o.prioridade === filtro);
 
   const exportarCSV = () => {
     const headers = ['KM','Area','Nivel Atual','Prioridade','Prazo','Metodo','Equipes','EPI'];
@@ -28,10 +24,19 @@ export default function Ordens() {
     a.click();
   };
 
+  if (!ordens.length) return <Loading />;
+
+  // Filtra por nível vindo do mapa
+  let filtradas = filtro === 'TODOS' ? ordens : ordens.filter(o => o.prioridade === filtro);
+  if (filtroKm !== null && filtroKm !== undefined) {
+    if (filtroKm === 3) filtradas = filtradas.filter(o => o.prioridade === 'URGENTE');
+    else if (filtroKm === 2) filtradas = filtradas.filter(o => o.prioridade === 'ALTA');
+  }
+
   const TEMA = {
-    'URGENTE': { bg: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)', label: 'URGENTE', prazoColor: '#fca5a5' },
-    'ALTA':    { bg: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)', label: 'ALTA', prazoColor: '#fdba74' },
-    'MEDIA':   { bg: 'linear-gradient(135deg, #ca8a04 0%, #a16207 100%)', label: 'MÉDIA', prazoColor: '#fde047' },
+    'URGENTE': { bg: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)', label: 'URGENTE', },
+    'ALTA':    { bg: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)', label: 'ALTA', },
+    'MEDIA':   { bg: 'linear-gradient(135deg, #ca8a04 0%, #a16207 100%)', label: 'MÉDIA', },
   };
 
   const urgentes = ordens.filter(o => o.prioridade === 'URGENTE').length;
@@ -59,11 +64,20 @@ export default function Ordens() {
       <div style={{display:'flex', gap:8, marginBottom:28, flexWrap:'wrap', alignItems:'center'}}>
         {['TODOS','URGENTE','ALTA','MEDIA'].map(f => (
           <button key={f} className={`filter-btn ${filtro === f ? 'ativo' : ''}`}
-            onClick={() => setFiltro(f)}>
+            onClick={() => { setFiltro(f); if(onClear) onClear(); }}>
             {f === 'TODOS' ? 'Todas' : f}
           </button>
         ))}
         <span className="count-label">{filtradas.length} ordens</span>
+        {filtroKm && (
+          <button onClick={() => { if(onClear) onClear(); setFiltro('TODOS'); }} style={{
+            background:'#f0f0f0', border:'none', borderRadius:8,
+            padding:'7px 14px', fontSize:12, fontWeight:600,
+            cursor:'pointer', color:'#555'
+          }}>
+            ✕ Limpar filtro do mapa
+          </button>
+        )}
         <button className="btn-primary" onClick={exportarCSV} style={{marginLeft:'auto'}}>
           ⬇ Exportar CSV
         </button>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Loading from './Loading';
 
-export default function Criticos() {
+export default function Criticos({ filtroInicial, onClear }) {
   const [criticos, setCriticos] = useState([]);
   const [filtroNivel, setFiltroNivel] = useState('TODOS');
   const [filtroArea, setFiltroArea] = useState('TODAS');
@@ -9,6 +9,13 @@ export default function Criticos() {
   useEffect(() => {
     fetch('http://localhost:8000/criticos').then(r => r.json()).then(setCriticos);
   }, []);
+
+  useEffect(() => {
+    if (filtroInicial) {
+      if (filtroInicial.nivel) setFiltroNivel(String(filtroInicial.nivel));
+      if (filtroInicial.area) setFiltroArea(filtroInicial.area);
+    }
+  }, [filtroInicial]);
 
   if (!criticos.length) return <Loading />;
 
@@ -31,6 +38,12 @@ export default function Criticos() {
     return { icon: '➡️', texto: 'Nível estável — manter monitoramento', cor: '#888', bg: '#f5f5f7' };
   };
 
+  const limparFiltro = () => {
+    setFiltroNivel('TODOS');
+    setFiltroArea('TODAS');
+    if (onClear) onClear();
+  };
+
   return (
     <div>
       <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:28}}>
@@ -38,12 +51,23 @@ export default function Criticos() {
           <h1 className="page-title">Trechos Críticos</h1>
           <p className="page-subtitle">Trechos que requerem intervenção imediata</p>
         </div>
-        <div style={{
-          background:'#fef2f2', border:'1.5px solid #ef444433',
-          borderRadius:12, padding:'12px 24px', textAlign:'center'
-        }}>
-          <p style={{fontSize:11, color:'#888', marginBottom:2, fontWeight:500}}>Total encontrado</p>
-          <p style={{fontSize:28, fontWeight:800, color:'#ef4444', lineHeight:1}}>{filtrados.length}</p>
+        <div style={{display:'flex', gap:12, alignItems:'center'}}>
+          {filtroInicial && (
+            <button onClick={limparFiltro} style={{
+              background:'#f0f0f0', border:'none', borderRadius:8,
+              padding:'8px 14px', fontSize:12, fontWeight:600,
+              cursor:'pointer', color:'#555'
+            }}>
+              ✕ Limpar filtro do mapa
+            </button>
+          )}
+          <div style={{
+            background:'#fef2f2', border:'1.5px solid #ef444433',
+            borderRadius:12, padding:'12px 24px', textAlign:'center'
+          }}>
+            <p style={{fontSize:11, color:'#888', marginBottom:2, fontWeight:500}}>Total encontrado</p>
+            <p style={{fontSize:28, fontWeight:800, color:'#ef4444', lineHeight:1}}>{filtrados.length}</p>
+          </div>
         </div>
       </div>
 
