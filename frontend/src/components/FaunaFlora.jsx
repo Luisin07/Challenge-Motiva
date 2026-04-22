@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from 'react';
+import Loading from './Loading';
 
-const CORES_NIVEL = {
-  'CRITICO': '#ef4444',
-  'ALTO': '#f97316',
-  'MODERADO': '#facc15',
-  'BAIXO': '#4ade80',
-  'MEDIO': '#facc15',
+const CORES = {
+  'CRITICO': '#dc2626',
+  'ALTO': '#ea580c',
+  'MODERADO': '#ca8a04',
+  'BAIXO': '#16a34a',
+  'MEDIO': '#ca8a04',
+};
+
+const GRADIENTS = {
+  'CRITICO': 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
+  'ALTO': 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
+  'MODERADO': 'linear-gradient(135deg, #ca8a04 0%, #a16207 100%)',
+  'BAIXO': 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+  'MEDIO': 'linear-gradient(135deg, #ca8a04 0%, #a16207 100%)',
 };
 
 const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -14,53 +23,55 @@ export default function FaunaFlora() {
   const [status, setStatus] = useState(null);
   const [especies, setEspecies] = useState([]);
   const [calendario, setCalendario] = useState([]);
-  const [alerta, setAlerta] = useState(null);
   const [gbif, setGbif] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:8000/fauna/status').then(r => r.json()).then(setStatus);
     fetch('http://localhost:8000/fauna/especies').then(r => r.json()).then(setEspecies);
     fetch('http://localhost:8000/fauna/calendario').then(r => r.json()).then(setCalendario);
-    fetch('http://localhost:8000/fauna/alerta').then(r => r.json()).then(setAlerta);
     fetch('http://localhost:8000/fauna/gbif').then(r => r.json()).then(setGbif);
   }, []);
 
-  if (!status) return <p style={{color:'#888'}}>Carregando...</p>;
+  if (!status) return <Loading />;
 
   return (
     <div>
-      <div className="page-header">
-        <h1 className="page-title">Fauna e Flora</h1>
-        <p className="page-subtitle">Bioma Mata Atlântica · Dados científicos reais via GBIF</p>
+      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:28}}>
+        <div>
+          <h1 className="page-title">Fauna e Flora</h1>
+          <p className="page-subtitle">Bioma Mata Atlântica · Dados científicos reais via GBIF</p>
+        </div>
+        <div style={{
+          background: CORES[status.restricao.nivel] + '15',
+          border: `1.5px solid ${CORES[status.restricao.nivel]}33`,
+          borderRadius:12, padding:'12px 24px', textAlign:'center'
+        }}>
+          <p style={{fontSize:11, color:'#888', marginBottom:2, fontWeight:500}}>Status Ambiental</p>
+          <p style={{fontSize:20, fontWeight:800, lineHeight:1, color: CORES[status.restricao.nivel]}}>
+            {status.restricao.nivel}
+          </p>
+        </div>
       </div>
 
-      <div style={{
-        background: CORES_NIVEL[status.restricao.nivel] + '22',
-        border: `2px solid ${CORES_NIVEL[status.restricao.nivel]}`,
-        borderRadius: 12, padding: 24, marginBottom: 32
-      }}>
-        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
-          <div>
-            <p style={{fontWeight: 700, fontSize: 18}}>Status Ambiental — {MESES[status.mes_atual - 1]}</p>
-            <p style={{color:'#555', marginTop: 4}}>{status.restricao.motivo}</p>
-          </div>
-          <span style={{
-            background: CORES_NIVEL[status.restricao.nivel],
-            color: '#fff', padding: '8px 20px',
-            borderRadius: 8, fontWeight: 700, fontSize: 16
-          }}>
-            {status.restricao.nivel}
-          </span>
+      {/* Status do mês */}
+      <div style={{borderRadius:18, overflow:'hidden', boxShadow:'0 4px 20px rgba(0,0,0,0.08)', marginBottom:24}}>
+        <div style={{background: GRADIENTS[status.restricao.nivel], padding:'22px 28px 18px'}}>
+          <p style={{color:'#ffffff99', fontSize:11, fontWeight:600, letterSpacing:1, marginBottom:4}}>
+            STATUS AMBIENTAL — {MESES[status.mes_atual - 1].toUpperCase()}
+          </p>
+          <p style={{color:'#fff', fontSize:22, fontWeight:800}}>{status.restricao.motivo}</p>
         </div>
         {status.especies_em_risco.length > 0 && (
-          <div style={{marginTop: 16}}>
-            <p style={{fontSize: 13, color: '#666', marginBottom: 8}}>Espécies em período de risco este mês:</p>
-            <div style={{display:'flex', gap: 8, flexWrap:'wrap'}}>
+          <div style={{background:'#fff', padding:'16px 28px'}}>
+            <p style={{fontSize:12, color:'#888', marginBottom:10}}>Espécies em período de risco este mês:</p>
+            <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
               {status.especies_em_risco.map((e, i) => (
                 <span key={i} style={{
-                  background: '#fff', border: `1px solid ${CORES_NIVEL[e.risco]}`,
-                  color: CORES_NIVEL[e.risco], padding: '4px 12px',
-                  borderRadius: 6, fontSize: 13, fontWeight: 600
+                  background: CORES[e.risco] + '15',
+                  border: `1px solid ${CORES[e.risco]}`,
+                  color: CORES[e.risco],
+                  padding:'5px 14px', borderRadius:8,
+                  fontSize:13, fontWeight:700
                 }}>
                   {e.nome}
                 </span>
@@ -70,90 +81,106 @@ export default function FaunaFlora() {
         )}
       </div>
 
-      <div style={{background:'#fff', borderRadius:12, padding:24, marginBottom:32, boxShadow:'0 1px 4px rgba(0,0,0,0.06)'}}>
-        <h3 style={{marginBottom:16, fontWeight:700, fontSize:15}}>Calendário de Restrições Ambientais</h3>
+      {/* Calendário */}
+      <div className="card" style={{marginBottom:24}}>
+        <h3 style={{fontSize:15, fontWeight:700, marginBottom:16}}>Calendário de Restrições Ambientais</h3>
         <div style={{display:'grid', gridTemplateColumns:'repeat(12,1fr)', gap:6}}>
           {calendario.map((c, i) => (
             <div key={i} style={{
-              background: CORES_NIVEL[c.nivel] + '33',
-              border: `2px solid ${CORES_NIVEL[c.nivel]}`,
-              borderRadius: 8, padding: '8px 4px', textAlign:'center'
+              background: GRADIENTS[c.nivel],
+              borderRadius:10, padding:'10px 4px', textAlign:'center',
+              opacity: i === (status.mes_atual - 1) ? 1 : 0.7,
+              boxShadow: i === (status.mes_atual - 1) ? '0 4px 12px rgba(0,0,0,0.2)' : 'none',
+              transform: i === (status.mes_atual - 1) ? 'scale(1.05)' : 'scale(1)',
+              transition:'all 0.2s'
             }}>
-              <p style={{fontSize: 12, fontWeight: 700, color: CORES_NIVEL[c.nivel]}}>{MESES[i]}</p>
-              <p style={{fontSize: 10, color:'#555', marginTop:2}}>{c.nivel}</p>
+              <p style={{fontSize:11, fontWeight:700, color:'#fff'}}>{MESES[i]}</p>
+              <p style={{fontSize:9, color:'#ffffff99', marginTop:2}}>{c.nivel}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <h3 style={{marginBottom:16, fontWeight:700, fontSize:15}}>Espécies Monitoradas</h3>
-      <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:32}}>
+      {/* Espécies */}
+      <h3 style={{fontSize:16, fontWeight:700, marginBottom:16}}>Espécies Monitoradas</h3>
+      <div style={{display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:20, marginBottom:28}}>
         {especies.map((e, i) => (
           <div key={i} style={{
-            background:'#fff', borderRadius:12, padding:20,
-            boxShadow:'0 1px 4px rgba(0,0,0,0.06)',
-            borderLeft:`4px solid ${CORES_NIVEL[e.risco]}`
+            borderRadius:18, overflow:'hidden',
+            boxShadow:'0 4px 20px rgba(0,0,0,0.08)',
+            background:'#fff'
           }}>
-            <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:8}}>
-              <div>
-                <p style={{fontWeight:700, fontSize:16}}>{e.nome}</p>
-                <p style={{fontSize:13, color:'#888'}}>{e.tipo}</p>
+            <div style={{background: GRADIENTS[e.risco], padding:'20px 24px 16px'}}>
+              <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
+                <div>
+                  <p style={{color:'#ffffff99', fontSize:11, fontWeight:600, letterSpacing:1, marginBottom:4}}>
+                    {e.tipo.toUpperCase()}
+                  </p>
+                  <p style={{color:'#fff', fontSize:20, fontWeight:800}}>{e.nome}</p>
+                </div>
+                <span style={{
+                  background:'#ffffff25', color:'#fff',
+                  padding:'5px 12px', borderRadius:8,
+                  fontSize:12, fontWeight:700
+                }}>
+                  {e.risco}
+                </span>
               </div>
-              <span style={{
-                background: CORES_NIVEL[e.risco] + '22',
-                color: CORES_NIVEL[e.risco],
-                padding:'4px 10px', borderRadius:6, fontSize:12, fontWeight:700
-              }}>
-                {e.risco}
-              </span>
+              <p style={{color:'#ffffff99', fontSize:13, marginTop:8}}>{e.descricao}</p>
             </div>
-            <p style={{fontSize:13, color:'#555', marginBottom:8}}>{e.descricao}</p>
-            <div style={{background:'#f8f8f8', borderRadius:8, padding:10}}>
-              <p style={{fontSize:11, color:'#888', marginBottom:4}}>🌿 Recomendação</p>
-              <p style={{fontSize:13, fontWeight:500}}>{e.recomendacao}</p>
-            </div>
-            <div style={{marginTop:10}}>
-              <p style={{fontSize:11, color:'#888', marginBottom:6}}>Período de risco:</p>
-              <div style={{display:'flex', gap:4, flexWrap:'wrap'}}>
-                {MESES.map((m, j) => (
-                  <span key={j} style={{
-                    padding:'2px 6px', borderRadius:4, fontSize:11,
-                    background: e.periodo_reproducao.includes(j+1) ? CORES_NIVEL[e.risco] : '#f0f0f0',
-                    color: e.periodo_reproducao.includes(j+1) ? '#fff' : '#aaa',
-                    fontWeight: e.periodo_reproducao.includes(j+1) ? 700 : 400
-                  }}>
-                    {m}
-                  </span>
-                ))}
+
+            <div style={{padding:'18px 24px'}}>
+              <div style={{background:'#f5f5f7', borderRadius:10, padding:'12px 14px', marginBottom:14}}>
+                <p style={{fontSize:10, color:'#aaa', fontWeight:600, letterSpacing:0.5, marginBottom:4}}>🌿 RECOMENDAÇÃO</p>
+                <p style={{fontSize:13, fontWeight:500, color:'#333'}}>{e.recomendacao}</p>
+              </div>
+              <div>
+                <p style={{fontSize:10, color:'#aaa', fontWeight:600, letterSpacing:0.5, marginBottom:8}}>PERÍODO DE RISCO</p>
+                <div style={{display:'flex', gap:4, flexWrap:'wrap'}}>
+                  {MESES.map((m, j) => (
+                    <span key={j} style={{
+                      padding:'3px 7px', borderRadius:5, fontSize:11,
+                      background: e.periodo_reproducao.includes(j+1) ? GRADIENTS[e.risco] : '#f0f0f0',
+                      color: e.periodo_reproducao.includes(j+1) ? '#fff' : '#bbb',
+                      fontWeight: e.periodo_reproducao.includes(j+1) ? 700 : 400
+                    }}>
+                      {m}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
         ))}
       </div>
 
+      {/* GBIF */}
       {gbif && (
-        <div style={{marginTop:32}}>
-          <h3 style={{marginBottom:8, fontWeight:700, fontSize:15}}>Avistamentos Reais — GBIF</h3>
-          <p style={{color:'#aaa', fontSize:13, marginBottom:16}}>
-            {gbif.total} ocorrências · {gbif.area_monitorada} · Fonte: {gbif.fonte}
-          </p>
-          <div style={{display:'grid', gap:10}}>
+        <div>
+          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:16}}>
+            <h3 style={{fontSize:16, fontWeight:700}}>Avistamentos Reais — GBIF</h3>
+            <span style={{fontSize:12, color:'#aaa'}}>
+              {gbif.total} ocorrências · {gbif.area_monitorada}
+            </span>
+          </div>
+          <div style={{display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:12}}>
             {gbif.ocorrencias.map((o, i) => (
               <div key={i} style={{
-                background:'#fff', borderRadius:10, padding:16,
-                boxShadow:'0 1px 4px rgba(0,0,0,0.06)',
-                display:'flex', justifyContent:'space-between', alignItems:'center'
+                background:'#fff', borderRadius:12, padding:'14px 18px',
+                boxShadow:'0 1px 6px rgba(0,0,0,0.06)',
+                display:'flex', justifyContent:'space-between', alignItems:'center',
+                borderLeft:'4px solid #5B0FBE'
               }}>
                 <div>
-                  <p style={{fontWeight:600, fontSize:14}}>{o.especie}</p>
-                  <p style={{fontSize:12, color:'#888', marginTop:2}}>
+                  <p style={{fontWeight:600, fontSize:14, color:'#1a1a2e'}}>{o.especie}</p>
+                  <p style={{fontSize:12, color:'#888', marginTop:3}}>
                     📍 {o.latitude?.toFixed(4)}, {o.longitude?.toFixed(4)} · 📅 {o.data?.split('T')[0]}
                   </p>
                 </div>
                 <a href={o.link} target="_blank" rel="noreferrer" style={{
                   fontSize:12, color:'#5B0FBE', textDecoration:'none',
-                  border:'1px solid #5B0FBE', padding:'4px 10px', borderRadius:6,
-                  fontWeight:600
+                  border:'1.5px solid #5B0FBE', padding:'5px 12px', borderRadius:8,
+                  fontWeight:600, whiteSpace:'nowrap', marginLeft:12
                 }}>
                   Ver no GBIF
                 </a>

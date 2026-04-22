@@ -28,20 +28,35 @@ export default function Ordens() {
     a.click();
   };
 
-  const ESTILOS = {
-    'URGENTE': { bg: '#fef2f2', border: '#ef4444', badgeBg: '#ef4444', badgeColor: '#fff' },
-    'ALTA':    { bg: '#fff7ed', border: '#f97316', badgeBg: '#f97316', badgeColor: '#fff' },
-    'MEDIA':   { bg: '#fefce8', border: '#ca8a04', badgeBg: '#fefce8', badgeColor: '#854d0e' },
+  const TEMA = {
+    'URGENTE': { bg: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)', label: 'URGENTE', prazoColor: '#fca5a5' },
+    'ALTA':    { bg: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)', label: 'ALTA', prazoColor: '#fdba74' },
+    'MEDIA':   { bg: 'linear-gradient(135deg, #ca8a04 0%, #a16207 100%)', label: 'MÉDIA', prazoColor: '#fde047' },
   };
+
+  const urgentes = ordens.filter(o => o.prioridade === 'URGENTE').length;
+  const altas = ordens.filter(o => o.prioridade === 'ALTA').length;
 
   return (
     <div>
-      <div className="page-header">
-        <h1 className="page-title">Ordens de Serviço</h1>
-        <p className="page-subtitle">Geradas automaticamente com base nos dados reais</p>
+      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:28}}>
+        <div>
+          <h1 className="page-title">Ordens de Serviço</h1>
+          <p className="page-subtitle">Geradas automaticamente com base nos dados reais</p>
+        </div>
+        <div style={{display:'flex', gap:12}}>
+          <div style={{background:'#fef2f2', border:'1.5px solid #ef444433', borderRadius:12, padding:'12px 20px', textAlign:'center'}}>
+            <p style={{fontSize:11, color:'#888', marginBottom:2, fontWeight:500}}>Urgentes</p>
+            <p style={{fontSize:24, fontWeight:800, color:'#ef4444', lineHeight:1}}>{urgentes}</p>
+          </div>
+          <div style={{background:'#fff7ed', border:'1.5px solid #f9731633', borderRadius:12, padding:'12px 20px', textAlign:'center'}}>
+            <p style={{fontSize:11, color:'#888', marginBottom:2, fontWeight:500}}>Alta</p>
+            <p style={{fontSize:24, fontWeight:800, color:'#f97316', lineHeight:1}}>{altas}</p>
+          </div>
+        </div>
       </div>
 
-      <div className="filter-bar">
+      <div style={{display:'flex', gap:8, marginBottom:28, flexWrap:'wrap', alignItems:'center'}}>
         {['TODOS','URGENTE','ALTA','MEDIA'].map(f => (
           <button key={f} className={`filter-btn ${filtro === f ? 'ativo' : ''}`}
             onClick={() => setFiltro(f)}>
@@ -54,50 +69,56 @@ export default function Ordens() {
         </button>
       </div>
 
-      <div style={{display:'grid', gap:12}}>
+      <div style={{display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:20}}>
         {filtradas.map((o, i) => {
-          const e = ESTILOS[o.prioridade];
+          const tema = TEMA[o.prioridade];
           return (
             <div key={i} style={{
-              background: e.bg,
-              borderRadius:12,
-              padding:'20px 24px',
-              boxShadow:'0 1px 4px rgba(0,0,0,0.06)',
-              borderLeft:`4px solid ${e.border}`
+              borderRadius:18, overflow:'hidden',
+              boxShadow:'0 4px 20px rgba(0,0,0,0.10)',
+              background:'#fff'
             }}>
-              <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14}}>
-                <div>
-                  <p style={{fontWeight:700, fontSize:16}}>{o.observacao}</p>
-                  <p style={{color:'#888', fontSize:13, marginTop:3}}>{o.area}</p>
+              <div style={{background: tema.bg, padding:'22px 24px 18px'}}>
+                <div style={{display:'flex', justifyContent:'space-between', alignItems:'flex-start'}}>
+                  <div>
+                    <p style={{color:'#ffffff99', fontSize:11, fontWeight:600, letterSpacing:1, marginBottom:4}}>
+                      ORDEM DE SERVIÇO
+                    </p>
+                    <p style={{color:'#fff', fontSize:20, fontWeight:800, letterSpacing:-0.3, lineHeight:1.2}}>
+                      {o.observacao}
+                    </p>
+                  </div>
+                  <span style={{
+                    background:'#ffffff25', color:'#fff',
+                    padding:'5px 12px', borderRadius:8,
+                    fontSize:12, fontWeight:700, whiteSpace:'nowrap', marginLeft:12
+                  }}>
+                    {tema.label}
+                  </span>
                 </div>
-                <span style={{
-                  background: e.badgeBg, color: e.badgeColor,
-                  padding:'5px 14px', borderRadius:8,
-                  fontSize:12, fontWeight:700,
-                  border: o.prioridade === 'MEDIA' ? '1.5px solid #ca8a04' : 'none'
-                }}>
-                  {o.prioridade}
-                </span>
+                <p style={{color:'#ffffff99', fontSize:13, marginTop:8}}>{o.area}</p>
               </div>
 
-              <div style={{display:'flex', gap:32, marginBottom:12, flexWrap:'wrap'}}>
-                <div>
-                  <p style={{fontSize:11, color:'#888', marginBottom:2}}>⏱ Prazo</p>
-                  <p style={{fontWeight:700, fontSize:14, color:'#1a1a2e'}}>{o.prazo}</p>
+              <div style={{padding:'20px 24px'}}>
+                <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:12, marginBottom:16}}>
+                  {[
+                    { label: 'PRAZO', value: o.prazo, icon: '⏱' },
+                    { label: 'MÉTODO', value: o.metodo.replace('Roçada ',''), icon: '🌿' },
+                    { label: 'EQUIPES', value: `${o.equipes_necessarias} equipe(s)`, icon: '👷' },
+                  ].map((item, j) => (
+                    <div key={j}>
+                      <p style={{fontSize:10, color:'#aaa', fontWeight:600, letterSpacing:0.5, marginBottom:4}}>
+                        {item.icon} {item.label}
+                      </p>
+                      <p style={{fontSize:15, fontWeight:700, color:'#1a1a2e'}}>{item.value}</p>
+                    </div>
+                  ))}
                 </div>
-                <div>
-                  <p style={{fontSize:11, color:'#888', marginBottom:2}}>🌿 Método</p>
-                  <p style={{fontWeight:700, fontSize:14, color:'#1a1a2e'}}>{o.metodo}</p>
-                </div>
-                <div>
-                  <p style={{fontSize:11, color:'#888', marginBottom:2}}>👷 Equipes</p>
-                  <p style={{fontWeight:700, fontSize:14, color:'#1a1a2e'}}>{o.equipes_necessarias} equipe(s)</p>
-                </div>
-              </div>
 
-              <div style={{borderTop:`1px solid ${e.border}22`, paddingTop:12}}>
-                <p style={{fontSize:11, color:'#888', marginBottom:4}}>🦺 EPI Obrigatório</p>
-                <p style={{fontSize:13, fontWeight:500, color:'#333'}}>{o.epi}</p>
+                <div style={{background:'#f5f5f7', borderRadius:10, padding:'10px 14px'}}>
+                  <p style={{fontSize:10, color:'#aaa', fontWeight:600, letterSpacing:0.5, marginBottom:4}}>🦺 EPI OBRIGATÓRIO</p>
+                  <p style={{fontSize:13, fontWeight:500, color:'#333'}}>{o.epi}</p>
+                </div>
               </div>
             </div>
           );
