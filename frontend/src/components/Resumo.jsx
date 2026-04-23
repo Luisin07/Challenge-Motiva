@@ -30,47 +30,68 @@ export default function Resumo() {
     'BAIXA': { bg: '#fefce8', border: '#ca8a04', text: '#ca8a04', badge: '#ca8a04' },
   };
 
+  const cards = [
+    { label: 'CONFORMIDADE', value: conformidade.conformidade_geral, unit: '%', sub: 'Geral ARTESP/ANTT', accent: conformidade.conformidade_geral >= 95 ? '#6ee7b7' : '#fca5a5', trend: conformidade.conformidade_geral >= 95 ? '● dentro do limite' : '▼ abaixo do alvo', trendColor: conformidade.conformidade_geral >= 95 ? '#6ee7b7' : '#fca5a5' },
+    { label: 'TRECHOS CRÍTICOS', value: resumo.criticos, unit: null, sub: 'Requerem intervenção', accent: '#fca5a5', trend: '▲ em alta', trendColor: '#fca5a5' },
+    { label: 'ORDENS URGENTES', value: urgentes, unit: null, sub: 'Prazo 48 horas', accent: '#fca5a5', trend: urgentes > 0 ? '▲ ação necessária' : '● ok', trendColor: urgentes > 0 ? '#fca5a5' : '#6ee7b7' },
+    { label: 'COM CRESCIMENTO', value: resumo.com_crescimento, unit: null, sub: 'Vegetação aumentando', accent: '#fde68a', trend: '▲ monitorar', trendColor: '#fde68a' },
+  ];
+
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
           <h1 className="page-title">Resumo Executivo</h1>
           <p className="page-subtitle">Gerado automaticamente em {hoje}</p>
         </div>
-        
+        <span style={{ background: '#5B0FBE', color: '#fff', padding: '8px 18px', borderRadius: 8, fontSize: 13, fontWeight: 700 }}>
+          VegeTrack
+        </span>
       </div>
 
-      {/* Alerta crítico */}
+      {/* Alerta crítico sutil */}
       {conformidade.violacoes_iminentes > 0 && (
         <div style={{
-          background: '#fef2f2', border: '2px solid #ef4444',
-          borderRadius: 16, padding: 24, marginBottom: 24,
-          display: 'flex', alignItems: 'center', gap: 20
+          background: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)',
+          borderRadius: 14, padding: '16px 24px', marginBottom: 24,
+          display: 'flex', alignItems: 'center', gap: 16,
+          boxShadow: '0 2px 12px rgba(91,15,190,0.20)'
         }}>
-          <span style={{ fontSize: 36 }}>⚠️</span>
-          <div>
-            <p style={{ fontWeight: 800, fontSize: 18, color: '#ef4444' }}>
+          <span style={{ fontSize: 28 }}>⚠️</span>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontWeight: 800, fontSize: 16, color: '#fca5a5' }}>
               {conformidade.violacoes_iminentes} violações iminentes — Intervenção em 48h
             </p>
-            <p style={{ color: '#888', fontSize: 14, marginTop: 4 }}>
+            <p style={{ color: '#ffffff88', fontSize: 13, marginTop: 3 }}>
               Trechos com vegetação acima do limite ARTESP/ANTT. Risco de multa contratual.
             </p>
+          </div>
+          <div style={{ background: '#fca5a520', borderRadius: 8, padding: '6px 14px', borderLeft: '3px solid #fca5a5' }}>
+            <p style={{ fontSize: 11, color: '#fca5a5', fontWeight: 700, whiteSpace: 'nowrap' }}>Ação em 48h</p>
           </div>
         </div>
       )}
 
-      {/* Cards principais */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
-        {[
-          { label: 'Conformidade', value: `${conformidade.conformidade_geral}%`, bg: '#f0fdf4', cor: '#16a34a', desc: 'Geral ARTESP/ANTT' },
-          { label: 'Trechos Críticos', value: resumo.criticos, bg: '#fef2f2', cor: '#ef4444', desc: 'Requerem intervenção' },
-          { label: 'Ordens Urgentes', value: urgentes, bg: '#fef2f2', cor: '#ef4444', desc: 'Prazo 48 horas' },
-          { label: 'Com Crescimento', value: resumo.com_crescimento, bg: '#fefce8', cor: '#ca8a04', desc: 'Vegetação aumentando' },
-        ].map((c, i) => (
-          <div key={i} style={{ background: c.bg, borderRadius: 16, padding: 24, border: `1px solid ${c.cor}22` }}>
-            <p style={{ color: '#888', fontSize: 12, fontWeight: 500, marginBottom: 8 }}>{c.label}</p>
-            <p style={{ fontSize: 40, fontWeight: 800, color: c.cor, lineHeight: 1 }}>{c.value}</p>
-            <p style={{ color: '#aaa', fontSize: 12, marginTop: 8 }}>{c.desc}</p>
+      {/* Cards BI Motiva */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24 }}>
+        {cards.map((c, i) => (
+          <div key={i} style={{
+            background: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)',
+            borderRadius: 14, padding: '18px 20px 16px',
+            boxShadow: '0 2px 12px rgba(91,15,190,0.20)',
+            position: 'relative', overflow: 'hidden',
+          }}>
+            <div style={{ position: 'absolute', top: -20, right: -20, width: 72, height: 72, borderRadius: '50%', background: c.accent + '20', pointerEvents: 'none' }} />
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: '#ffffff66', marginBottom: 12, textTransform: 'uppercase' }}>{c.label}</p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 10 }}>
+              <span style={{ fontSize: 34, fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: -1 }}>{c.value}</span>
+              {c.unit && <span style={{ fontSize: 15, fontWeight: 700, color: '#ffffffbb' }}>{c.unit}</span>}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <p style={{ fontSize: 11, color: '#ffffff55' }}>{c.sub}</p>
+              <span style={{ fontSize: 10, fontWeight: 700, color: c.trendColor, whiteSpace: 'nowrap', marginLeft: 6 }}>{c.trend}</span>
+            </div>
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, background: c.accent, opacity: 0.8 }} />
           </div>
         ))}
       </div>
@@ -108,48 +129,29 @@ export default function Resumo() {
         </div>
       </div>
 
-      {/* Previsão compacta — top 5 trechos críticos em até 7 dias */}
+      {/* Previsão compacta */}
       {previsao.length > 0 && (
         <div style={{ background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', marginBottom: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <div>
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e', marginBottom: 2 }}>
-                🔮 Previsão de Criticidade
-              </h3>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e', marginBottom: 2 }}>🔮 Previsão de Criticidade</h3>
               <p style={{ fontSize: 12, color: '#aaa' }}>Trechos que podem atingir nível crítico nos próximos dias</p>
             </div>
-            <span style={{
-              background: '#fef2f2', color: '#ef4444',
-              border: '1px solid #ef444433',
-              padding: '4px 12px', borderRadius: 8,
-              fontSize: 12, fontWeight: 700
-            }}>
+            <span style={{ background: '#fef2f2', color: '#ef4444', border: '1px solid #ef444433', padding: '4px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
               {previsao.filter(p => p.urgencia === 'ALTA').length} em alerta
             </span>
           </div>
-
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             {previsao.map((p, i) => {
               const cor = URGENCIA_COR[p.urgencia] || URGENCIA_COR['BAIXA'];
               return (
-                <div key={i} style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  background: cor.bg, border: `1px solid ${cor.border}22`,
-                  borderRadius: 12, padding: '12px 16px'
-                }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: cor.bg, border: `1px solid ${cor.border}22`, borderRadius: 12, padding: '12px 16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <span style={{
-                      background: cor.badge, color: '#fff',
-                      width: 28, height: 28, borderRadius: '50%',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 12, fontWeight: 800, flexShrink: 0
-                    }}>
+                    <span style={{ background: cor.badge, color: '#fff', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0 }}>
                       {i + 1}
                     </span>
                     <div>
-                      <p style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e' }}>
-                        KM {(p.km / 1000).toFixed(1).replace('.', '+')}
-                      </p>
+                      <p style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e' }}>KM {(p.km / 1000).toFixed(1).replace('.', '+')}</p>
                       <p style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{p.area}</p>
                     </div>
                   </div>
@@ -158,11 +160,7 @@ export default function Resumo() {
                       <p style={{ fontSize: 11, color: '#aaa', fontWeight: 600, marginBottom: 2 }}>CRESCIMENTO</p>
                       <p style={{ fontSize: 14, fontWeight: 700, color: cor.text }}>+{p.crescimento_semanal}/semana</p>
                     </div>
-                    <div style={{
-                      background: cor.text, color: '#fff',
-                      padding: '6px 14px', borderRadius: 8,
-                      fontSize: 13, fontWeight: 800, whiteSpace: 'nowrap'
-                    }}>
+                    <div style={{ background: cor.text, color: '#fff', padding: '6px 14px', borderRadius: 8, fontSize: 13, fontWeight: 800, whiteSpace: 'nowrap' }}>
                       {p.dias_para_critico <= 7 ? `${p.dias_para_critico} dias` : `~${p.dias_para_critico}d`}
                     </div>
                   </div>
@@ -173,7 +171,7 @@ export default function Resumo() {
         </div>
       )}
 
-      <div style={{ background: '#5B0FBE', borderRadius: 16, padding: 24, textAlign: 'center' }}>
+      <div style={{ background: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)', borderRadius: 16, padding: 24, textAlign: 'center', boxShadow: '0 2px 12px rgba(91,15,190,0.20)' }}>
         <p style={{ color: '#fff', fontSize: 14, fontWeight: 700 }}>VegeTrack — Sistema Inteligente de Monitoramento de Vegetação</p>
         <p style={{ color: '#ffffff88', fontSize: 12, marginTop: 6 }}>Dados processados em tempo real · Challenge Motiva x FIAP 2026</p>
       </div>

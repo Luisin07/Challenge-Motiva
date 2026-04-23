@@ -9,7 +9,7 @@ export default function Loading() {
     }}>
       <div style={{
         width:48, height:48, border:'4px solid #f0f0f0',
-        borderTop:'4px solid #4ade80', borderRadius:'50%',
+        borderTop:'4px solid #5B0FBE', borderRadius:'50%',
         animation:'spin 0.8s linear infinite'
       }}/>
       <p style={{color:'#888', fontSize:14}}>Carregando dados do Rodoanel...</p>
