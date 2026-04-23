@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Loading from './Loading';
 
+const API = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 const CORES = {
   'CRITICO': '#dc2626',
   'ALTO': '#ea580c',
@@ -26,10 +28,10 @@ export default function FaunaFlora() {
   const [gbif, setGbif] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:8000/fauna/status').then(r => r.json()).then(setStatus);
-    fetch('http://localhost:8000/fauna/especies').then(r => r.json()).then(setEspecies);
-    fetch('http://localhost:8000/fauna/calendario').then(r => r.json()).then(setCalendario);
-    fetch('http://localhost:8000/fauna/gbif').then(r => r.json()).then(setGbif);
+    fetch(`${API}/fauna/status`).then(r => r.json()).then(setStatus);
+    fetch(`${API}/fauna/especies`).then(r => r.json()).then(setEspecies);
+    fetch(`${API}/fauna/calendario`).then(r => r.json()).then(setCalendario);
+    fetch(`${API}/fauna/gbif`).then(r => r.json()).then(setGbif);
   }, []);
 
   if (!status) return <Loading />;

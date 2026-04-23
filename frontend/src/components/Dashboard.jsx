@@ -4,6 +4,8 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineCh
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
+const API = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 export default function Dashboard({ setPagina, navegarParaTrecho, navegarParaOrdem }) {
   const [resumo, setResumo] = useState(null);
   const [criticos, setCriticos] = useState([]);
@@ -13,11 +15,11 @@ export default function Dashboard({ setPagina, navegarParaTrecho, navegarParaOrd
   const [filtroMapa, setFiltroMapa] = useState('TODOS');
 
   useEffect(() => {
-    fetch('http://localhost:8000/resumo').then(r => r.json()).then(setResumo);
-    fetch('http://localhost:8000/criticos').then(r => r.json()).then(setCriticos);
-    fetch('http://localhost:8000/conformidade').then(r => r.json()).then(setConformidade);
-    fetch('http://localhost:8000/ordens').then(r => r.json()).then(setOrdens);
-    fetch('http://localhost:8000/mapa/pontos').then(r => r.json()).then(setPontos);
+    fetch(`${API}/resumo`).then(r => r.json()).then(setResumo);
+    fetch(`${API}/criticos`).then(r => r.json()).then(setCriticos);
+    fetch(`${API}/conformidade`).then(r => r.json()).then(setConformidade);
+    fetch(`${API}/ordens`).then(r => r.json()).then(setOrdens);
+    fetch(`${API}/mapa/pontos`).then(r => r.json()).then(setPontos);
   }, []);
 
   if (!resumo || !conformidade) return <Loading />;
@@ -41,12 +43,10 @@ export default function Dashboard({ setPagina, navegarParaTrecho, navegarParaOrd
     { mes: 'Mar/20', nivel: 1.33 },
   ];
 
-  // Distribui níveis pelos pontos baseado na proporção real dos dados
   const totalCriticos = criticos.filter(c => c.nivel_20 === 3).length;
   const totalModerado = criticos.filter(c => c.nivel_20 === 2).length;
   const totalNormal = criticos.filter(c => c.nivel_20 === 1).length;
   const total = totalCriticos + totalModerado + totalNormal;
-
   const amostra = pontos.filter((_, i) => i % 6 === 0);
 
   const pontosComNivel = amostra.map((p, i) => {
@@ -57,72 +57,126 @@ export default function Dashboard({ setPagina, navegarParaTrecho, navegarParaOrd
     return { ...p, nivel };
   });
 
-  const pontosFiltrados = filtroMapa === 'TODOS'
-    ? pontosComNivel
-    : filtroMapa === 'CRITICO'
-    ? pontosComNivel.filter(p => p.nivel === 3)
-    : filtroMapa === 'MODERADO'
-    ? pontosComNivel.filter(p => p.nivel === 2)
+  const pontosFiltrados = filtroMapa === 'TODOS' ? pontosComNivel
+    : filtroMapa === 'CRITICO' ? pontosComNivel.filter(p => p.nivel === 3)
+    : filtroMapa === 'MODERADO' ? pontosComNivel.filter(p => p.nivel === 2)
     : pontosComNivel.filter(p => p.nivel === 1);
 
-  const corNivel = (nivel) => {
-    if (nivel === 3) return '#ef4444';
-    if (nivel === 2) return '#ca8a04';
-    return '#16a34a';
-  };
-
-  const labelNivel = (nivel) => {
-    if (nivel === 3) return '🚨 Nível 3 — Crítico';
-    if (nivel === 2) return '⚠️ Nível 2 — Moderado';
-    return '✅ Nível 1 — Normal';
-  };
+  const corNivel = (nivel) => nivel === 3 ? '#ef4444' : nivel === 2 ? '#ca8a04' : '#16a34a';
+  const labelNivel = (nivel) => nivel === 3 ? '🚨 Nível 3 — Crítico' : nivel === 2 ? '⚠️ Nível 2 — Moderado' : '✅ Nível 1 — Normal';
 
   const FILTROS = [
-    { id: 'TODOS', label: 'Todos', cor: '#5B0FBE' },
-    { id: 'CRITICO', label: 'Crítico', cor: '#ef4444' },
+    { id: 'TODOS',    label: 'Todos',    cor: '#5B0FBE' },
+    { id: 'CRITICO',  label: 'Crítico',  cor: '#ef4444' },
     { id: 'MODERADO', label: 'Moderado', cor: '#ca8a04' },
-    { id: 'NORMAL', label: 'Normal', cor: '#16a34a' },
+    { id: 'NORMAL',   label: 'Normal',   cor: '#16a34a' },
+  ];
+
+  const cards = [
+    {
+      label: 'EXTENSÃO',
+      value: '29,3', unit: 'km',
+      sub: 'Rodoanel Mário Covas',
+      accent: '#a78bfa', trend: null, pagina: null,
+    },
+    {
+      label: 'MONITORADOS',
+      value: resumo.total_trechos, unit: null,
+      sub: 'pontos de controle',
+      accent: '#a78bfa', trend: null, pagina: 'criticos',
+    },
+    {
+      label: 'CRÍTICOS',
+      value: resumo.criticos, unit: null,
+      sub: `${((resumo.criticos / resumo.total_trechos) * 100).toFixed(1)}% do total`,
+      accent: '#fca5a5', trend: '▲ em alta', trendColor: '#fca5a5', pagina: 'criticos',
+    },
+    {
+      label: 'CRESCENDO',
+      value: resumo.com_crescimento, unit: null,
+      sub: 'vegetação em alta',
+      accent: '#fde68a', trend: '▲ em alta', trendColor: '#fde68a', pagina: 'criticos',
+    },
+    {
+      label: 'CONFORMIDADE',
+      value: conformidade.conformidade_geral, unit: '%',
+      sub: 'ARTESP / ANTT',
+      accent: conformidade.conformidade_geral >= 95 ? '#6ee7b7' : '#fca5a5',
+      trend: conformidade.conformidade_geral >= 95 ? '● dentro do limite' : '▼ abaixo do alvo',
+      trendColor: conformidade.conformidade_geral >= 95 ? '#6ee7b7' : '#fca5a5',
+      pagina: 'conformidade',
+    },
   ];
 
   return (
     <div>
-      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:24}}>
+      <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:20}}>
         <h1 className="page-title">Dashboard</h1>
         <span style={{fontSize:12, color:'#aaa'}}>Última atualização: 20/03/2026 · Rodoanel Mário Covas</span>
       </div>
 
-      {/* Cards métricas */}
-      <div style={{display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:14, marginBottom:24}}>
-        {[
-          { icon:'🛣️', label:'Extensão', value:'29,3 km', sub:'Rodoanel Mário Covas', cor:'#5B0FBE', bg:'#f5f0ff', pagina: null },
-          { icon:'📍', label:'Monitorados', value: resumo.total_trechos, sub:'Pontos de controle', cor:'#1a1a2e', bg:'#f5f5f7', pagina: 'criticos' },
-          { icon:'⚠️', label:'Críticos', value: resumo.criticos, sub:'Requerem intervenção', cor:'#ef4444', bg:'#fef2f2', pagina: 'criticos' },
-          { icon:'📈', label:'Crescendo', value: resumo.com_crescimento, sub:'Vegetação aumentando', cor:'#ca8a04', bg:'#fefce8', pagina: 'criticos' },
-          { icon:'✅', label:'Conformidade', value:`${conformidade.conformidade_geral}%`, sub:'ARTESP / ANTT', cor:'#16a34a', bg:'#f0fdf4', pagina: 'conformidade' },
-        ].map((c, i) => (
-          <div key={i}
+      {/* Cards BI Motiva */}
+      <div style={{display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:12, marginBottom:20}}>
+        {cards.map((c, i) => (
+          <div
+            key={i}
             onClick={() => c.pagina && setPagina(c.pagina)}
             style={{
-              background: c.bg, borderRadius:14, padding:'18px 20px',
-              border:`1px solid ${c.cor}22`,
+              background: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)',
+              borderRadius:14,
+              padding:'18px 20px 16px',
               cursor: c.pagina ? 'pointer' : 'default',
-              transition:'transform 0.15s, box-shadow 0.15s'
+              transition:'transform 0.15s, box-shadow 0.15s',
+              boxShadow:'0 2px 12px rgba(91,15,190,0.20)',
+              position:'relative',
+              overflow:'hidden',
             }}
-            onMouseEnter={e => { if(c.pagina) { e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='0 6px 20px rgba(0,0,0,0.1)'; }}}
-            onMouseLeave={e => { e.currentTarget.style.transform='none'; e.currentTarget.style.boxShadow='none'; }}
+            onMouseEnter={e => { if(c.pagina) { e.currentTarget.style.transform='translateY(-3px)'; e.currentTarget.style.boxShadow='0 8px 24px rgba(91,15,190,0.35)'; }}}
+            onMouseLeave={e => { e.currentTarget.style.transform='none'; e.currentTarget.style.boxShadow='0 2px 12px rgba(91,15,190,0.20)'; }}
           >
-            <div style={{display:'flex', alignItems:'center', gap:8, marginBottom:10}}>
-              <span style={{fontSize:18}}>{c.icon}</span>
-              <p style={{color:'#888', fontSize:12, fontWeight:500}}>{c.label}</p>
+            {/* Círculo decorativo */}
+            <div style={{
+              position:'absolute', top:-20, right:-20,
+              width:72, height:72, borderRadius:'50%',
+              background: c.accent + '20', pointerEvents:'none'
+            }} />
+
+            <p style={{
+              fontSize:10, fontWeight:700, letterSpacing:1.5,
+              color:'#ffffff66', marginBottom:12, textTransform:'uppercase'
+            }}>
+              {c.label}
+            </p>
+
+            <div style={{display:'flex', alignItems:'baseline', gap:5, marginBottom:10}}>
+              <span style={{fontSize:36, fontWeight:800, color:'#fff', lineHeight:1, letterSpacing:-1}}>
+                {c.value}
+              </span>
+              {c.unit && (
+                <span style={{fontSize:16, fontWeight:700, color:'#ffffffbb'}}>{c.unit}</span>
+              )}
             </div>
-            <p style={{fontSize:30, fontWeight:800, color:c.cor, lineHeight:1}}>{c.value}</p>
-            <p style={{color:'#bbb', fontSize:11, marginTop:6}}>{c.sub}</p>
+
+            <div style={{display:'flex', justifyContent:'space-between', alignItems:'center'}}>
+              <p style={{fontSize:11, color:'#ffffff55'}}>{c.sub}</p>
+              {c.trend && (
+                <span style={{fontSize:10, fontWeight:700, color: c.trendColor, whiteSpace:'nowrap', marginLeft:6}}>
+                  {c.trend}
+                </span>
+              )}
+            </div>
+
+            {/* Linha accent na base */}
+            <div style={{
+              position:'absolute', bottom:0, left:0, right:0,
+              height:3, background: c.accent, opacity:0.8
+            }} />
           </div>
         ))}
       </div>
 
       {/* Mapa + Urgentes */}
-      <div style={{display:'grid', gridTemplateColumns:'1.6fr 1fr', gap:20, marginBottom:24}}>
+      <div style={{display:'grid', gridTemplateColumns:'1.6fr 1fr', gap:20, marginBottom:20}}>
         <div className="card" style={{padding:0, overflow:'hidden'}}>
           <div style={{padding:'14px 20px', borderBottom:'1px solid #f0f0f0'}}>
             <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12}}>
@@ -149,11 +203,11 @@ export default function Dashboard({ setPagina, navegarParaTrecho, navegarParaOrd
             </div>
           </div>
           <MapContainer
-  center={[-23.52, -46.78]}
-  zoom={11}
-  style={{height:'380px', width:'100%', zIndex:0}}
-  scrollWheelZoom={false}
->
+            center={[-23.52, -46.78]}
+            zoom={11}
+            style={{height:'380px', width:'100%', zIndex:0}}
+            scrollWheelZoom={false}
+          >
             <TileLayer
               url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
               attribution='&copy; CartoDB'
@@ -171,34 +225,34 @@ export default function Dashboard({ setPagina, navegarParaTrecho, navegarParaOrd
                 }}
               >
                 <Popup>
-  <div style={{minWidth:180, fontFamily:'Inter, sans-serif'}}>
-    <p style={{fontWeight:700, fontSize:14, margin:'0 0 4px', color:'#1a1a2e'}}>
-      {labelNivel(p.nivel)}
-    </p>
-    <p style={{fontSize:11, color:'#888', margin:'0 0 12px'}}>
-      Clique para ver os trechos filtrados
-    </p>
-    <div style={{display:'flex', flexDirection:'column', gap:6}}>
-      <button onClick={() => navegarParaTrecho(p.nivel, null)} style={{
-        background:'#5B0FBE', color:'#fff', border:'none',
-        padding:'7px 10px', borderRadius:6, fontSize:11,
-        fontWeight:600, cursor:'pointer', width:'100%'
-      }}>
-        🗂 Ver todos de nível {p.nivel}
-      </button>
-      {p.nivel >= 2 && (
-  <button onClick={() => navegarParaOrdem(p.nivel)} style={{
-    background: p.nivel === 3 ? '#ef4444' : '#ca8a04',
-    color:'#fff', border:'none',
-    padding:'7px 10px', borderRadius:6, fontSize:11,
-    fontWeight:600, cursor:'pointer', width:'100%'
-  }}>
-    📋 Ver ordens de serviço
-  </button>
-)}
-    </div>
-  </div>
-</Popup>
+                  <div style={{minWidth:180, fontFamily:'Inter, sans-serif'}}>
+                    <p style={{fontWeight:700, fontSize:14, margin:'0 0 4px', color:'#1a1a2e'}}>
+                      {labelNivel(p.nivel)}
+                    </p>
+                    <p style={{fontSize:11, color:'#888', margin:'0 0 12px'}}>
+                      Clique para ver os trechos filtrados
+                    </p>
+                    <div style={{display:'flex', flexDirection:'column', gap:6}}>
+                      <button onClick={() => navegarParaTrecho(p.nivel, null)} style={{
+                        background:'#5B0FBE', color:'#fff', border:'none',
+                        padding:'7px 10px', borderRadius:6, fontSize:11,
+                        fontWeight:600, cursor:'pointer', width:'100%'
+                      }}>
+                        🗂 Ver todos de nível {p.nivel}
+                      </button>
+                      {p.nivel >= 2 && (
+                        <button onClick={() => navegarParaOrdem(p.nivel)} style={{
+                          background: p.nivel === 3 ? '#ef4444' : '#ca8a04',
+                          color:'#fff', border:'none',
+                          padding:'7px 10px', borderRadius:6, fontSize:11,
+                          fontWeight:600, cursor:'pointer', width:'100%'
+                        }}>
+                          📋 Ver ordens de serviço
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </Popup>
               </CircleMarker>
             ))}
           </MapContainer>
@@ -212,7 +266,7 @@ export default function Dashboard({ setPagina, navegarParaTrecho, navegarParaOrd
             </span>
           </div>
           <div style={{display:'flex', flexDirection:'column', gap:8}}>
-            {ordens.slice(0,6).map((o, i) => (
+            {ordens.slice(0, 6).map((o, i) => (
               <div key={i}
                 onClick={() => setPagina('ordens')}
                 style={{

@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import Loading from './Loading';
 
+const API = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 export default function Criticos({ filtroInicial, onClear }) {
   const [criticos, setCriticos] = useState([]);
   const [filtroNivel, setFiltroNivel] = useState('TODOS');
   const [filtroArea, setFiltroArea] = useState('TODAS');
 
   useEffect(() => {
-    fetch('http://localhost:8000/criticos').then(r => r.json()).then(setCriticos);
+    fetch(`${API}/criticos`).then(r => r.json()).then(setCriticos);
   }, []);
 
   useEffect(() => {
