@@ -1,7 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Polygon, Popup, CircleMarker } from 'react-leaflet';
+import { MapContainer, TileLayer, Polygon, Popup, CircleMarker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import Loading from './Loading';
+
+// 🔧 força o Leaflet recalcular tamanho (evita bugs de render/scroll)
+function FixMapSize() {
+  const map = useMap();
+
+  useEffect(() => {
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 0);
+  }, [map]);
+
+  return null;
+}
 
 export default function MapaRodoanel() {
   const [trechos, setTrechos] = useState([]);
@@ -25,21 +38,7 @@ export default function MapaRodoanel() {
 
   if (loading) return <Loading />;
 
-  const getCriticoInfo = (center) => {
-    if (!center) return null;
-    const km = center[0];
-    const lng = center[1];
-    return criticos.find(c => {
-      const kmTrecho = c.km / 1000;
-      return Math.abs(kmTrecho - Math.abs(km)) < 0.1;
-    });
-  };
-
   const getTrechoColor = (trecho) => {
-    const critico = criticos.find(c => {
-      if (!trecho.center) return false;
-      return c.nivel_20 === 3;
-    });
     if (trecho.color === '#ff0000') return '#ef4444';
     if (trecho.color === '#ffff00') return '#ca8a04';
     if (trecho.color === '#00ff00') return '#16a34a';
@@ -53,6 +52,7 @@ export default function MapaRodoanel() {
           <h1 className="page-title">Mapa do Rodoanel</h1>
           <p className="page-subtitle">Rodoanel Mário Covas · Visualização geoespacial em tempo real</p>
         </div>
+
         <div style={{display:'flex', gap:12, alignItems:'center'}}>
           {[
             { cor: '#ef4444', label: 'Nível 3 — Crítico' },
@@ -67,13 +67,25 @@ export default function MapaRodoanel() {
         </div>
       </div>
 
-      <div style={{borderRadius:18, overflow:'hidden', boxShadow:'0 4px 20px rgba(0,0,0,0.12)', marginBottom:24}}>
+      {/* 🔥 CONTAINER CORRIGIDO */}
+      <div
+        style={{
+          borderRadius:18,
+          overflow:'hidden',
+          boxShadow:'0 4px 20px rgba(0,0,0,0.12)',
+          marginBottom:24,
+          position:'relative',
+          zIndex:0
+        }}
+      >
         <MapContainer
           center={[-23.5505, -46.6333]}
           zoom={12}
           style={{height:'520px', width:'100%'}}
           scrollWheelZoom={true}
         >
+          <FixMapSize />
+
           <TileLayer
             attribution='&copy; OpenStreetMap'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
