@@ -149,11 +149,11 @@ export default function Dashboard({ setPagina, navegarParaTrecho, navegarParaOrd
             </div>
           </div>
           <MapContainer
-            center={[-23.53, -46.80]}
-            zoom={12}
-            style={{height:'380px', width:'100%'}}
-            scrollWheelZoom={true}
-          >
+  center={[-23.52, -46.78]}
+  zoom={11}
+  style={{height:'380px', width:'100%', zIndex:0}}
+  scrollWheelZoom={false}
+>
             <TileLayer
               url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
               attribution='&copy; CartoDB'

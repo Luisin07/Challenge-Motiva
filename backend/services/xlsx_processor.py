@@ -159,3 +159,28 @@ def get_conformidade():
         'base_legal': 'ARTESP Anexo 6 + ANTT PER — limite máximo 30cm faixa de domínio',
         'trechos': trechos_risco
     }
+def get_previsao_critico():
+    dados = calcular_crescimento()
+    df = pd.DataFrame(dados)
+    
+    # Só trechos nível 2 com crescimento positivo
+    em_risco = df[(df['nivel_20'] == 2) & (df['crescimento'] > 0)]
+    
+    resultado = []
+    for _, row in em_risco.iterrows():
+        # Taxa de crescimento: crescimento / 7 dias (intervalo entre os dois XLSXs)
+        taxa_diaria = row['crescimento'] / 7
+        # Dias para atingir nível 3 (precisa crescer 1 nível)
+        dias_para_critico = round(1 / taxa_diaria) if taxa_diaria > 0 else 999
+        
+        resultado.append({
+            'km': row['km'],
+            'area': row['area'],
+            'nivel_atual': int(row['nivel_20']),
+            'crescimento_semanal': int(row['crescimento']),
+            'dias_para_critico': dias_para_critico,
+            'urgencia': 'ALTA' if dias_para_critico <= 7 else 'MEDIA' if dias_para_critico <= 14 else 'BAIXA'
+        })
+    
+    resultado.sort(key=lambda x: x['dias_para_critico'])
+    return resultado

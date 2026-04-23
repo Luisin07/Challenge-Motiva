@@ -69,3 +69,8 @@ def mapa_marcos():
 @app.get("/mapa/pontos")
 def mapa_pontos():
     return get_pontos_criticos_mapa()
+from services.xlsx_processor import calcular_crescimento, get_resumo, gerar_ordem_servico, get_conformidade, get_previsao_critico
+
+@app.get("/previsao")
+def previsao():
+    return get_previsao_critico()
