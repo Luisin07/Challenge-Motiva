@@ -16,49 +16,27 @@ function getSegurancaInfo(temp, hora) {
   const calor_alto = temp >= 32;
   const horario_critico = hora >= 11 && hora < 15;
 
-  if (calor_extremo) {
-    return {
-      nivel: 'CRITICO',
-      cor: '#dc2626',
-      bg: '#fef2f2',
-      icone: '🚨',
-      titulo: 'Calor Extremo — Suspender Atividades',
-      descricao: `${temp}°C · Temperatura acima de 35°C. NR-15 exige suspensão de trabalho externo.`,
-      pausas: 'Pausas de 45min a cada 45min de trabalho. Hidratação obrigatória.',
-      janela: 'Retomar apenas após as 16h ou quando temperatura baixar de 32°C.'
-    };
-  }
-  if (calor_alto && horario_critico) {
-    return {
-      nivel: 'ALTO',
-      cor: '#ea580c',
-      bg: '#fff7ed',
-      icone: '⚠️',
-      titulo: 'Alerta de Calor — Horário Crítico',
-      descricao: `${temp}°C · Horário de pico solar (11h–15h). Alto risco de insolação.`,
-      pausas: 'Pausas de 30min a cada 1h. Água a cada 20 minutos.',
-      janela: 'Preferir trabalho antes das 11h ou após as 15h.'
-    };
-  }
-  if (calor_alto) {
-    return {
-      nivel: 'MODERADO',
-      cor: '#ca8a04',
-      bg: '#fefce8',
-      icone: '🌡️',
-      titulo: 'Atenção — Temperatura Elevada',
-      descricao: `${temp}°C · Monitorar condição das equipes em campo.`,
-      pausas: 'Pausas de 15min a cada 2h. Manter hidratação.',
-      janela: 'Evitar exposição direta ao sol entre 11h e 15h.'
-    };
-  }
+  if (calor_extremo) return {
+    nivel: 'CRITICO', accent: '#fca5a5',
+    icone: '🚨', titulo: 'Calor Extremo — Suspender Atividades',
+    pausas: 'Pausas de 45min a cada 45min. Hidratação obrigatória.',
+    janela: 'Retomar apenas após as 16h ou abaixo de 32°C.'
+  };
+  if (calor_alto && horario_critico) return {
+    nivel: 'ALTO', accent: '#fdba74',
+    icone: '⚠️', titulo: 'Alerta de Calor — Horário Crítico',
+    pausas: 'Pausas de 30min a cada 1h. Água a cada 20 minutos.',
+    janela: 'Preferir trabalho antes das 11h ou após as 15h.'
+  };
+  if (calor_alto) return {
+    nivel: 'MODERADO', accent: '#fde68a',
+    icone: '🌡️', titulo: 'Atenção — Temperatura Elevada',
+    pausas: 'Pausas de 15min a cada 2h. Manter hidratação.',
+    janela: 'Evitar exposição direta ao sol entre 11h e 15h.'
+  };
   return {
-    nivel: 'BAIXO',
-    cor: '#16a34a',
-    bg: '#f0fdf4',
-    icone: '✅',
-    titulo: 'Condições Seguras',
-    descricao: `${temp}°C · Temperatura dentro do limite seguro para trabalho externo.`,
+    nivel: 'BAIXO', accent: '#6ee7b7',
+    icone: '✅', titulo: 'Condições Seguras',
     pausas: 'Pausas normais a cada 2h. Manter hidratação.',
     janela: 'Janela segura para operações em campo.'
   };
@@ -75,8 +53,6 @@ export default function Ordens({ filtroKm, onClear }) {
   useEffect(() => {
     fetch(`${API}/ordens`).then(r => r.json()).then(setOrdens);
     fetch(`${API}/fauna/alerta`).then(r => r.json()).then(setAlertaFauna);
-
-    // OpenWeatherMap — Osasco/SP (região do Rodoanel)
     fetch(`https://api.openweathermap.org/data/2.5/weather?lat=-23.5329&lon=-46.7920&appid=${WEATHER_KEY}&units=metric&lang=pt_br`)
       .then(r => r.json())
       .then(d => {
@@ -89,26 +65,19 @@ export default function Ordens({ filtroKm, onClear }) {
             vento: Math.round(d.wind.speed * 3.6),
             cidade: d.name,
           });
-        } else {
-          setClimaErro(true);
-        }
+        } else setClimaErro(true);
       })
       .catch(() => setClimaErro(true));
   }, []);
 
   const exportarCSV = () => {
     const headers = ['KM', 'Area', 'Nivel Atual', 'Prioridade', 'Prazo', 'Metodo', 'Equipes', 'EPI'];
-    const rows = filtradas.map(o => [
-      o.observacao, o.area, o.nivel_atual, o.prioridade,
-      o.prazo, o.metodo, o.equipes_necessarias, o.epi
-    ]);
+    const rows = filtradas.map(o => [o.observacao, o.area, o.nivel_atual, o.prioridade, o.prazo, o.metodo, o.equipes_necessarias, o.epi]);
     const csv = [headers, ...rows].map(r => r.join(';')).join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = 'ordens_servico_vegetrack.csv';
-    a.click();
+    a.href = url; a.download = 'ordens_servico_vegetrack.csv'; a.click();
   };
 
   if (!ordens.length) return <Loading />;
@@ -120,15 +89,14 @@ export default function Ordens({ filtroKm, onClear }) {
   }
 
   const TEMA = {
-    'URGENTE': { bg: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)', label: 'URGENTE' },
-    'ALTA':    { bg: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)', label: 'ALTA' },
-    'MEDIA':   { bg: 'linear-gradient(135deg, #ca8a04 0%, #a16207 100%)', label: 'MÉDIA' },
+    'URGENTE': { bgHeader: '#fef2f2', borderCor: '#ef4444', label: 'URGENTE', labelBg: '#ef444420', labelCor: '#ef4444' },
+    'ALTA':    { bgHeader: '#fff7ed', borderCor: '#f97316', label: 'ALTA',    labelBg: '#f9731620', labelCor: '#f97316' },
+    'MEDIA':   { bgHeader: '#fefce8', borderCor: '#ca8a04', label: 'MÉDIA',   labelBg: '#ca8a0420', labelCor: '#ca8a04' },
   };
 
   const urgentes = ordens.filter(o => o.prioridade === 'URGENTE').length;
   const altas = ordens.filter(o => o.prioridade === 'ALTA').length;
   const corFauna = alertaFauna ? NIVEL_COR[alertaFauna.nivel] || '#ca8a04' : null;
-
   const horaAtual = new Date().getHours();
   const seguranca = clima ? getSegurancaInfo(clima.temp, horaAtual) : null;
 
@@ -151,37 +119,42 @@ export default function Ordens({ filtroKm, onClear }) {
         </div>
       </div>
 
-      {/* Módulo de Segurança do Trabalhador */}
+      {/* Módulo Segurança do Trabalhador — padrão Motiva */}
       {clima && seguranca && (
         <div style={{
-          background: seguranca.bg,
-          border: `1.5px solid ${seguranca.cor}33`,
-          borderRadius: 14, marginBottom: 20, overflow: 'hidden'
+          background: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)',
+          borderRadius: 14, marginBottom: 20, overflow: 'hidden',
+          boxShadow: '0 2px 12px rgba(91,15,190,0.20)', position: 'relative'
         }}>
-          {/* Header */}
+          {/* Círculo decorativo */}
           <div style={{
-            background: seguranca.cor,
-            padding: '10px 20px',
-            display: 'flex', alignItems: 'center', justifyContent: 'space-between'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 16 }}>{seguranca.icone}</span>
-              <p style={{ color: '#fff', fontWeight: 800, fontSize: 13 }}>{seguranca.titulo}</p>
+            position: 'absolute', top: -20, right: -20,
+            width: 80, height: 80, borderRadius: '50%',
+            background: seguranca.accent + '20', pointerEvents: 'none'
+          }} />
+
+          <div style={{ padding: '18px 20px 16px' }}>
+            {/* Título */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 16 }}>{seguranca.icone}</span>
+                <div>
+                  <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: '#ffffff66', textTransform: 'uppercase', marginBottom: 2 }}>
+                    SEGURANÇA DO TRABALHADOR
+                  </p>
+                  <p style={{ color: '#fff', fontWeight: 800, fontSize: 14 }}>{seguranca.titulo}</p>
+                </div>
+              </div>
+              <span style={{ color: '#ffffff55', fontSize: 11 }}>{clima.cidade} · Agora</span>
             </div>
-            <span style={{ color: '#ffffff99', fontSize: 11 }}>
-              Segurança do Trabalhador · {clima.cidade} · Agora
-            </span>
-          </div>
 
-          {/* Corpo */}
-          <div style={{ padding: '16px 20px' }}>
+            {/* Dados + recomendações */}
             <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 20, alignItems: 'start' }}>
-
-              {/* Dados climáticos */}
+              {/* Temperatura */}
               <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
                 <div style={{ textAlign: 'center' }}>
-                  <p style={{ fontSize: 42, fontWeight: 800, color: seguranca.cor, lineHeight: 1 }}>{clima.temp}°</p>
-                  <p style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{clima.descricao}</p>
+                  <p style={{ fontSize: 42, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{clima.temp}°</p>
+                  <p style={{ fontSize: 11, color: '#ffffff66', marginTop: 2 }}>{clima.descricao}</p>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {[
@@ -190,56 +163,48 @@ export default function Ordens({ filtroKm, onClear }) {
                     { label: 'Vento', value: `${clima.vento} km/h` },
                   ].map((item, i) => (
                     <div key={i}>
-                      <p style={{ fontSize: 10, color: '#aaa', fontWeight: 600 }}>{item.label}</p>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e' }}>{item.value}</p>
+                      <p style={{ fontSize: 10, color: '#ffffff55', fontWeight: 600 }}>{item.label}</p>
+                      <p style={{ fontSize: 13, fontWeight: 700, color: '#ffffffcc' }}>{item.value}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Alertas e recomendações */}
+              {/* Recomendações */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <div style={{ background: '#fff', borderRadius: 8, padding: '8px 12px', borderLeft: `3px solid ${seguranca.cor}` }}>
-                  <p style={{ fontSize: 10, color: '#aaa', fontWeight: 600, marginBottom: 3 }}>🕐 JANELA DE TRABALHO</p>
-                  <p style={{ fontSize: 12, color: '#333', fontWeight: 500 }}>{seguranca.janela}</p>
+                <div style={{ background: '#ffffff15', borderRadius: 8, padding: '8px 12px', borderLeft: `3px solid ${seguranca.accent}` }}>
+                  <p style={{ fontSize: 10, color: '#ffffff66', fontWeight: 600, marginBottom: 3 }}>🕐 JANELA DE TRABALHO</p>
+                  <p style={{ fontSize: 12, color: '#ffffffcc', fontWeight: 500 }}>{seguranca.janela}</p>
                 </div>
-                <div style={{ background: '#fff', borderRadius: 8, padding: '8px 12px', borderLeft: `3px solid ${seguranca.cor}` }}>
-                  <p style={{ fontSize: 10, color: '#aaa', fontWeight: 600, marginBottom: 3 }}>💧 PAUSAS E HIDRATAÇÃO — NR-15</p>
-                  <p style={{ fontSize: 12, color: '#333', fontWeight: 500 }}>{seguranca.pausas}</p>
+                <div style={{ background: '#ffffff15', borderRadius: 8, padding: '8px 12px', borderLeft: `3px solid ${seguranca.accent}` }}>
+                  <p style={{ fontSize: 10, color: '#ffffff66', fontWeight: 600, marginBottom: 3 }}>💧 PAUSAS E HIDRATAÇÃO — NR-15</p>
+                  <p style={{ fontSize: 12, color: '#ffffffcc', fontWeight: 500 }}>{seguranca.pausas}</p>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Linha accent na base */}
+          <div style={{ height: 3, background: seguranca.accent, opacity: 0.8 }} />
         </div>
       )}
 
       {climaErro && (
-        <div style={{
-          background: '#f5f5f7', borderRadius: 12, padding: '12px 18px',
-          marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10
-        }}>
+        <div style={{ background: '#f5f5f7', borderRadius: 12, padding: '12px 18px', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontSize: 16 }}>🌤️</span>
           <p style={{ fontSize: 12, color: '#888' }}>Dados climáticos indisponíveis no momento.</p>
         </div>
       )}
 
-      {/* Banner de alerta ambiental */}
+      {/* Banner fauna */}
       {alertaFauna && alertaFauna.alerta && (
-        <div style={{
-          background: corFauna + '10',
-          border: `2px solid ${corFauna}`,
-          borderRadius: 14, marginBottom: 20, overflow: 'hidden'
-        }}>
-          <div
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', cursor: 'pointer' }}
-            onClick={() => setAlertaExpandido(!alertaExpandido)}
-          >
+        <div style={{ background: corFauna + '10', border: `2px solid ${corFauna}`, borderRadius: 14, marginBottom: 20, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px', cursor: 'pointer' }}
+            onClick={() => setAlertaExpandido(!alertaExpandido)}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <span style={{ fontSize: 22 }}>🦎</span>
               <div>
-                <p style={{ fontWeight: 800, fontSize: 14, color: corFauna }}>
-                  Alerta Ambiental — Restrição {alertaFauna.nivel}
-                </p>
+                <p style={{ fontWeight: 800, fontSize: 14, color: corFauna }}>Alerta Ambiental — Restrição {alertaFauna.nivel}</p>
                 <p style={{ fontSize: 12, color: '#666', marginTop: 2 }}>{alertaFauna.motivo}</p>
               </div>
             </div>
@@ -247,42 +212,25 @@ export default function Ordens({ filtroKm, onClear }) {
               <span style={{ background: corFauna, color: '#fff', padding: '3px 10px', borderRadius: 6, fontSize: 11, fontWeight: 700 }}>
                 {alertaFauna.especies_afetadas?.length || 0} espécies
               </span>
-              <span style={{ color: corFauna, fontSize: 18, fontWeight: 700 }}>
-                {alertaExpandido ? '▲' : '▼'}
-              </span>
+              <span style={{ color: corFauna, fontSize: 18, fontWeight: 700 }}>{alertaExpandido ? '▲' : '▼'}</span>
             </div>
           </div>
-
           {alertaExpandido && (
             <div style={{ padding: '0 20px 16px', borderTop: `1px solid ${corFauna}33` }}>
               <div style={{ paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <div>
-                  <p style={{ fontSize: 11, color: '#aaa', fontWeight: 600, letterSpacing: 0.5, marginBottom: 8 }}>
-                    🐾 ESPÉCIES EM PERÍODO DE RISCO
-                  </p>
+                  <p style={{ fontSize: 11, color: '#aaa', fontWeight: 600, letterSpacing: 0.5, marginBottom: 8 }}>🐾 ESPÉCIES EM PERÍODO DE RISCO</p>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {alertaFauna.especies_afetadas?.map((e, i) => (
-                      <span key={i} style={{
-                        background: corFauna + '15', border: `1px solid ${corFauna}`,
-                        color: corFauna, padding: '4px 12px', borderRadius: 7, fontSize: 12, fontWeight: 700
-                      }}>
-                        {e}
-                      </span>
+                      <span key={i} style={{ background: corFauna + '15', border: `1px solid ${corFauna}`, color: corFauna, padding: '4px 12px', borderRadius: 7, fontSize: 12, fontWeight: 700 }}>{e}</span>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <p style={{ fontSize: 11, color: '#aaa', fontWeight: 600, letterSpacing: 0.5, marginBottom: 8 }}>
-                    ✅ RECOMENDAÇÕES PARA AS EQUIPES
-                  </p>
+                  <p style={{ fontSize: 11, color: '#aaa', fontWeight: 600, letterSpacing: 0.5, marginBottom: 8 }}>✅ RECOMENDAÇÕES PARA AS EQUIPES</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     {alertaFauna.recomendacoes?.map((r, i) => (
-                      <div key={i} style={{
-                        background: '#fff', borderRadius: 8, padding: '8px 12px',
-                        fontSize: 12, color: '#444', borderLeft: `3px solid ${corFauna}`
-                      }}>
-                        {r}
-                      </div>
+                      <div key={i} style={{ background: '#fff', borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#444', borderLeft: `3px solid ${corFauna}` }}>{r}</div>
                     ))}
                   </div>
                 </div>
@@ -301,46 +249,30 @@ export default function Ordens({ filtroKm, onClear }) {
         ))}
         <span className="count-label">{filtradas.length} ordens</span>
         {filtroKm && (
-          <button onClick={() => { if (onClear) onClear(); setFiltro('TODOS'); }} style={{
-            background: '#f0f0f0', border: 'none', borderRadius: 8,
-            padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', color: '#555'
-          }}>
+          <button onClick={() => { if (onClear) onClear(); setFiltro('TODOS'); }} style={{ background: '#f0f0f0', border: 'none', borderRadius: 8, padding: '7px 14px', fontSize: 12, fontWeight: 600, cursor: 'pointer', color: '#555' }}>
             ✕ Limpar filtro do mapa
           </button>
         )}
-        <button className="btn-primary" onClick={exportarCSV} style={{ marginLeft: 'auto' }}>
-          ⬇ Exportar CSV
-        </button>
+        <button className="btn-primary" onClick={exportarCSV} style={{ marginLeft: 'auto' }}>⬇ Exportar CSV</button>
       </div>
 
+      {/* Cards de ordens — header claro com borda colorida */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 20 }}>
         {filtradas.map((o, i) => {
           const tema = TEMA[o.prioridade];
           return (
-            <div key={i} style={{
-              borderRadius: 18, overflow: 'hidden',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.10)',
-              background: '#fff'
-            }}>
-              <div style={{ background: tema.bg, padding: '22px 24px 18px' }}>
+            <div key={i} style={{ borderRadius: 18, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', background: '#fff' }}>
+              <div style={{ background: tema.bgHeader, borderLeft: `4px solid ${tema.borderCor}`, padding: '20px 24px 16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                   <div>
-                    <p style={{ color: '#ffffff99', fontSize: 11, fontWeight: 600, letterSpacing: 1, marginBottom: 4 }}>
-                      ORDEM DE SERVIÇO
-                    </p>
-                    <p style={{ color: '#fff', fontSize: 20, fontWeight: 800, letterSpacing: -0.3, lineHeight: 1.2 }}>
-                      {o.observacao}
-                    </p>
+                    <p style={{ color: '#aaa', fontSize: 11, fontWeight: 600, letterSpacing: 1, marginBottom: 4 }}>ORDEM DE SERVIÇO</p>
+                    <p style={{ color: '#1a1a2e', fontSize: 18, fontWeight: 800, letterSpacing: -0.3, lineHeight: 1.3 }}>{o.observacao}</p>
                   </div>
-                  <span style={{
-                    background: '#ffffff25', color: '#fff',
-                    padding: '5px 12px', borderRadius: 8,
-                    fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', marginLeft: 12
-                  }}>
+                  <span style={{ background: tema.labelBg, color: tema.labelCor, padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap', marginLeft: 12 }}>
                     {tema.label}
                   </span>
                 </div>
-                <p style={{ color: '#ffffff99', fontSize: 13, marginTop: 8 }}>{o.area}</p>
+                <p style={{ color: '#888', fontSize: 13, marginTop: 8 }}>{o.area}</p>
               </div>
 
               <div style={{ padding: '20px 24px' }}>
@@ -351,14 +283,11 @@ export default function Ordens({ filtroKm, onClear }) {
                     { label: 'EQUIPES', value: `${o.equipes_necessarias} equipe(s)`, icon: '👷' },
                   ].map((item, j) => (
                     <div key={j}>
-                      <p style={{ fontSize: 10, color: '#aaa', fontWeight: 600, letterSpacing: 0.5, marginBottom: 4 }}>
-                        {item.icon} {item.label}
-                      </p>
+                      <p style={{ fontSize: 10, color: '#aaa', fontWeight: 600, letterSpacing: 0.5, marginBottom: 4 }}>{item.icon} {item.label}</p>
                       <p style={{ fontSize: 15, fontWeight: 700, color: '#1a1a2e' }}>{item.value}</p>
                     </div>
                   ))}
                 </div>
-
                 <div style={{ background: '#f5f5f7', borderRadius: 10, padding: '10px 14px' }}>
                   <p style={{ fontSize: 10, color: '#aaa', fontWeight: 600, letterSpacing: 0.5, marginBottom: 4 }}>🦺 EPI OBRIGATÓRIO</p>
                   <p style={{ fontSize: 13, fontWeight: 500, color: '#333' }}>{o.epi}</p>
