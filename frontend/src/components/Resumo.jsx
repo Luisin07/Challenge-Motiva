@@ -27,9 +27,7 @@ export default function Resumo() {
           <h1 className="page-title">Resumo Executivo</h1>
           <p className="page-subtitle">Gerado automaticamente em {hoje}</p>
         </div>
-        <span style={{background:'#5B0FBE', color:'#fff', padding:'8px 18px', borderRadius:8, fontSize:13, fontWeight:700}}>
-          VegeTrack
-        </span>
+        
       </div>
 
       {/* Alertas críticos em destaque */}
