@@ -3,22 +3,20 @@ import Loading from './Loading';
 
 const API = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
-
-const GRADIENTS = {
-  'CRITICO': 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-  'ALTO': 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
-  'MODERADO': 'linear-gradient(135deg, #ca8a04 0%, #a16207 100%)',
-  'BAIXO': 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
-  'MEDIO': 'linear-gradient(135deg, #ca8a04 0%, #a16207 100%)',
+const NIVEL_ACCENT = {
+  'CRITICO': '#fca5a5',
+  'ALTO':    '#fdba74',
+  'MODERADO':'#fde68a',
+  'BAIXO':   '#6ee7b7',
+  'MEDIO':   '#fde68a',
 };
 
-// Accent suave por nível para o calendário
-const ACCENT = {
-  'CRITICO': '#fca5a5',
-  'ALTO': '#fdba74',
-  'MODERADO': '#fde68a',
-  'BAIXO': '#6ee7b7',
-  'MEDIO': '#fde68a',
+const NIVEL_COR = {
+  'CRITICO': '#dc2626',
+  'ALTO':    '#ea580c',
+  'MODERADO':'#ca8a04',
+  'BAIXO':   '#16a34a',
+  'MEDIO':   '#ca8a04',
 };
 
 const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -54,8 +52,7 @@ export default function FaunaFlora() {
         boxShadow: '0 2px 12px rgba(91,15,190,0.20)',
         position: 'relative', overflow: 'hidden'
       }}>
-        <div style={{ position: 'absolute', top: -24, right: -24, width: 96, height: 96, borderRadius: '50%', background: ACCENT[status.restricao.nivel] + '20', pointerEvents: 'none' }} />
-
+        <div style={{ position: 'absolute', top: -24, right: -24, width: 96, height: 96, borderRadius: '50%', background: NIVEL_ACCENT[status.restricao.nivel] + '20', pointerEvents: 'none' }} />
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: '#ffffff66', marginBottom: 8, textTransform: 'uppercase' }}>
@@ -72,15 +69,14 @@ export default function FaunaFlora() {
               </div>
             )}
           </div>
-          <span style={{ background: ACCENT[status.restricao.nivel] + '30', color: ACCENT[status.restricao.nivel], padding: '8px 18px', borderRadius: 10, fontSize: 14, fontWeight: 800, border: `1px solid ${ACCENT[status.restricao.nivel]}50`, whiteSpace: 'nowrap' }}>
+          <span style={{ background: NIVEL_ACCENT[status.restricao.nivel] + '30', color: NIVEL_ACCENT[status.restricao.nivel], padding: '8px 18px', borderRadius: 10, fontSize: 14, fontWeight: 800, border: `1px solid ${NIVEL_ACCENT[status.restricao.nivel]}50`, whiteSpace: 'nowrap' }}>
             {status.restricao.nivel}
           </span>
         </div>
-
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, background: ACCENT[status.restricao.nivel], opacity: 0.8 }} />
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, background: NIVEL_ACCENT[status.restricao.nivel], opacity: 0.8 }} />
       </div>
 
-      {/* Calendário */}
+      {/* Calendário — padrão Motiva, accent por nível */}
       <div className="card" style={{ marginBottom: 24 }}>
         <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Calendário de Restrições Ambientais</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12,1fr)', gap: 6 }}>
@@ -88,37 +84,62 @@ export default function FaunaFlora() {
             const ativo = i === (status.mes_atual - 1);
             return (
               <div key={i} style={{
-                background: ativo ? 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)' : GRADIENTS[c.nivel],
-                borderRadius: 10, padding: '10px 4px', textAlign: 'center',
-                opacity: ativo ? 1 : 0.75,
-                boxShadow: ativo ? '0 4px 14px rgba(91,15,190,0.35)' : 'none',
+                background: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)',
+                borderRadius: 10, padding: '10px 4px 6px', textAlign: 'center',
+                border: ativo ? '2px solid #fff' : '2px solid transparent',
+                boxShadow: ativo ? '0 4px 14px rgba(91,15,190,0.35)' : '0 1px 4px rgba(0,0,0,0.08)',
                 transform: ativo ? 'scale(1.07)' : 'scale(1)',
                 transition: 'all 0.2s',
-                border: ativo ? '2px solid #a78bfa' : '2px solid transparent'
+                position: 'relative', overflow: 'hidden'
               }}>
                 <p style={{ fontSize: 11, fontWeight: 700, color: '#fff' }}>{MESES[i]}</p>
-                <p style={{ fontSize: 9, color: '#ffffff99', marginTop: 2 }}>{c.nivel}</p>
+                <p style={{ fontSize: 9, color: '#ffffff88', marginTop: 2, marginBottom: 4 }}>{c.nivel}</p>
+                {/* Linha accent na base */}
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, background: NIVEL_ACCENT[c.nivel], opacity: 0.9 }} />
               </div>
             );
           })}
         </div>
+        {/* Legenda */}
+        <div style={{ display: 'flex', gap: 16, marginTop: 14, flexWrap: 'wrap' }}>
+          {[['BAIXO','#6ee7b7'],['MODERADO','#fde68a'],['ALTO','#fdba74'],['CRITICO','#fca5a5']].map(([nivel, cor]) => (
+            <div key={nivel} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 12, height: 3, background: cor, borderRadius: 2 }} />
+              <p style={{ fontSize: 11, color: '#aaa', fontWeight: 600 }}>{nivel}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Espécies */}
+      {/* Espécies — header roxo Motiva, badge de risco */}
       <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 16 }}>Espécies Monitoradas</h3>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 20, marginBottom: 28 }}>
         {especies.map((e, i) => (
           <div key={i} style={{ borderRadius: 18, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', background: '#fff' }}>
-            <div style={{ background: GRADIENTS[e.risco], padding: '20px 24px 16px' }}>
+            {/* Header roxo Motiva */}
+            <div style={{
+              background: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)',
+              padding: '20px 24px 16px', position: 'relative', overflow: 'hidden'
+            }}>
+              <div style={{ position: 'absolute', top: -16, right: -16, width: 60, height: 60, borderRadius: '50%', background: NIVEL_ACCENT[e.risco] + '20', pointerEvents: 'none' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <p style={{ color: '#ffffff99', fontSize: 11, fontWeight: 600, letterSpacing: 1, marginBottom: 4 }}>{e.tipo.toUpperCase()}</p>
+                  <p style={{ color: '#ffffff66', fontSize: 11, fontWeight: 600, letterSpacing: 1, marginBottom: 4 }}>{e.tipo.toUpperCase()}</p>
                   <p style={{ color: '#fff', fontSize: 20, fontWeight: 800 }}>{e.nome}</p>
                 </div>
-                <span style={{ background: '#ffffff25', color: '#fff', padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700 }}>{e.risco}</span>
+                <span style={{
+                  background: NIVEL_ACCENT[e.risco] + '30',
+                  color: NIVEL_ACCENT[e.risco],
+                  padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+                  border: `1px solid ${NIVEL_ACCENT[e.risco]}50`
+                }}>
+                  {e.risco}
+                </span>
               </div>
-              <p style={{ color: '#ffffff99', fontSize: 13, marginTop: 8 }}>{e.descricao}</p>
+              <p style={{ color: '#ffffff88', fontSize: 13, marginTop: 8 }}>{e.descricao}</p>
+              <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, background: NIVEL_ACCENT[e.risco], opacity: 0.8 }} />
             </div>
+
             <div style={{ padding: '18px 24px' }}>
               <div style={{ background: '#f5f5f7', borderRadius: 10, padding: '12px 14px', marginBottom: 14 }}>
                 <p style={{ fontSize: 10, color: '#aaa', fontWeight: 600, letterSpacing: 0.5, marginBottom: 4 }}>🌿 RECOMENDAÇÃO</p>
@@ -127,16 +148,19 @@ export default function FaunaFlora() {
               <div>
                 <p style={{ fontSize: 10, color: '#aaa', fontWeight: 600, letterSpacing: 0.5, marginBottom: 8 }}>PERÍODO DE RISCO</p>
                 <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-                  {MESES.map((m, j) => (
-                    <span key={j} style={{
-                      padding: '3px 7px', borderRadius: 5, fontSize: 11,
-                      background: e.periodo_reproducao.includes(j + 1) ? GRADIENTS[e.risco] : '#f0f0f0',
-                      color: e.periodo_reproducao.includes(j + 1) ? '#fff' : '#bbb',
-                      fontWeight: e.periodo_reproducao.includes(j + 1) ? 700 : 400
-                    }}>
-                      {m}
-                    </span>
-                  ))}
+                  {MESES.map((m, j) => {
+                    const ativo = e.periodo_reproducao.includes(j + 1);
+                    return (
+                      <span key={j} style={{
+                        padding: '3px 7px', borderRadius: 5, fontSize: 11,
+                        background: ativo ? 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)' : '#f0f0f0',
+                        color: ativo ? '#fff' : '#bbb',
+                        fontWeight: ativo ? 700 : 400
+                      }}>
+                        {m}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
             </div>
