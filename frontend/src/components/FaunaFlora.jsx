@@ -11,14 +11,6 @@ const NIVEL_ACCENT = {
   'MEDIO':   '#fde68a',
 };
 
-const NIVEL_COR = {
-  'CRITICO': '#dc2626',
-  'ALTO':    '#ea580c',
-  'MODERADO':'#ca8a04',
-  'BAIXO':   '#16a34a',
-  'MEDIO':   '#ca8a04',
-};
-
 const MESES = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 
 export default function FaunaFlora() {
