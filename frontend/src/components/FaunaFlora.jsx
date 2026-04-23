@@ -3,13 +3,6 @@ import Loading from './Loading';
 
 const API = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
-const CORES = {
-  'CRITICO': '#dc2626',
-  'ALTO': '#ea580c',
-  'MODERADO': '#ca8a04',
-  'BAIXO': '#16a34a',
-  'MEDIO': '#ca8a04',
-};
 
 const GRADIENTS = {
   'CRITICO': 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
