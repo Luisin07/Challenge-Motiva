@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Loading from './Loading';
 
 const API = process.env.REACT_APP_API_URL || 'http://localhost:8000';
-const WEATHER_KEY = process.env.REACT_APP_WEATHER_KEY || 'de2ab908d38784c2698dad125902ef67';
+const WEATHER_KEY = process.env.REACT_APP_WEATHER_KEY;
 
 const NIVEL_COR = {
   'CRITICO': '#dc2626',
