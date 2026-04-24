@@ -20,12 +20,216 @@ function getIndiceInfo(score) {
   return { label: 'Situação Crítica', icone: '🚨', accent: '#fca5a5' };
 }
 
+async function gerarPDF(dados) {
+  const { default: jsPDF } = await import('jspdf');
+  const doc = new jsPDF();
+  const { resumo, conformidade, ordens, fauna, indice, indiceInfo, hoje } = dados;
+  const urgentes = ordens.filter(o => o.prioridade === 'URGENTE');
+
+  const roxo = [91, 15, 190];
+  const roxoEscuro = [59, 15, 140];
+  const branco = [255, 255, 255];
+  const cinzaClaro = [245, 245, 247];
+  const cinzaTexto = [100, 100, 100];
+  const vermelho = [220, 38, 38];
+  const verde = [22, 163, 74];
+
+  // Cabeçalho
+  doc.setFillColor(...roxoEscuro);
+  doc.rect(0, 0, 210, 40, 'F');
+  doc.setFillColor(...roxo);
+  doc.rect(0, 35, 210, 8, 'F');
+
+  doc.setTextColor(...branco);
+  doc.setFontSize(22);
+  doc.setFont('helvetica', 'bold');
+  doc.text('VegeTrack', 14, 18);
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Sistema Inteligente de Monitoramento de Vegetacao', 14, 26);
+  doc.text('Rodoanel Mario Covas (SP-021) — Challenge Motiva x FIAP 2026', 14, 32);
+
+  doc.setFontSize(10);
+  doc.text(`Emitido em: ${hoje}`, 150, 20);
+  doc.text('Documento oficial de conformidade', 150, 26);
+
+  // Índice de saúde
+  doc.setFillColor(...cinzaClaro);
+  doc.rect(14, 50, 182, 36, 'F');
+
+  doc.setTextColor(...roxo);
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'bold');
+  doc.text('INDICE DE SAUDE DO RODOANEL', 14, 58);
+
+  doc.setFontSize(36);
+  doc.setTextColor(...roxo);
+  doc.text(`${indice}`, 14, 78);
+
+  doc.setFontSize(12);
+  doc.setTextColor(...cinzaTexto);
+  doc.text('/100', 38, 78);
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...(indice >= 80 ? verde : indice >= 60 ? [202, 138, 4] : vermelho));
+  doc.text(indiceInfo.label, 55, 72);
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...cinzaTexto);
+  doc.text(`Conformidade geral: ${conformidade.conformidade_geral}%`, 55, 80);
+  doc.text(`Trechos criticos: ${resumo.criticos} de ${resumo.total_trechos} monitorados`, 120, 72);
+  doc.text(`Com crescimento: ${resumo.com_crescimento} trechos`, 120, 80);
+
+  // Linha divisória
+  doc.setDrawColor(...roxo);
+  doc.setLineWidth(0.5);
+  doc.line(14, 92, 196, 92);
+
+  // Resumo de métricas
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...roxoEscuro);
+  doc.text('RESUMO EXECUTIVO', 14, 102);
+
+  const metricas = [
+    ['Extensao monitorada', '29,3 km'],
+    ['Trechos monitorados', String(resumo.total_trechos)],
+    ['Nivel medio de vegetacao', String(resumo.nivel_medio)],
+    ['Violacoes iminentes (ARTESP/ANTT)', String(conformidade.violacoes_iminentes)],
+    ['Risco em 7 dias', String(conformidade.risco_em_7_dias)],
+    ['Ordens urgentes (48h)', String(urgentes.length)],
+    ['Status ambiental', fauna.restricao.nivel],
+  ];
+
+  let y = 110;
+  metricas.forEach(([label, valor], i) => {
+    doc.setFillColor(...(i % 2 === 0 ? cinzaClaro : branco));
+    doc.rect(14, y - 5, 182, 9, 'F');
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...cinzaTexto);
+    doc.text(label, 17, y);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...roxoEscuro);
+    doc.text(valor, 170, y, { align: 'right' });
+    y += 9;
+  });
+
+  y += 6;
+
+  // Violações iminentes
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...roxoEscuro);
+  doc.text('VIOLACOES IMINENTES — ARTESP/ANTT', 14, y);
+  y += 6;
+
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...cinzaTexto);
+  doc.text('Trechos com vegetacao acima do limite de 30cm. Intervencao obrigatoria em ate 48 horas.', 14, y);
+  y += 8;
+
+  // Header tabela
+  doc.setFillColor(...roxo);
+  doc.rect(14, y, 182, 8, 'F');
+  doc.setTextColor(...branco);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.text('KM', 17, y + 5.5);
+  doc.text('AREA', 40, y + 5.5);
+  doc.text('SITUACAO', 120, y + 5.5);
+  doc.text('PRAZO', 165, y + 5.5);
+  y += 8;
+
+  const violacoes = conformidade.trechos.filter(t => t.situacao === 'VIOLACAO IMINENTE');
+  violacoes.slice(0, 15).forEach((t, i) => {
+    doc.setFillColor(...(i % 2 === 0 ? [254, 242, 242] : branco));
+    doc.rect(14, y, 182, 8, 'F');
+    doc.setTextColor(...cinzaTexto);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    const km = (t.km / 1000).toFixed(1).replace('.', '+');
+    doc.text(`KM ${km}`, 17, y + 5.5);
+    doc.text(t.area.replace('Canteiro ', ''), 40, y + 5.5);
+    doc.setTextColor(...vermelho);
+    doc.setFont('helvetica', 'bold');
+    doc.text(t.situacao, 120, y + 5.5);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...cinzaTexto);
+    doc.text(t.prazo_legal, 165, y + 5.5);
+    y += 8;
+  });
+
+  y += 6;
+
+  // Ordens urgentes
+  if (y > 240) {
+    doc.addPage();
+    y = 20;
+  }
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...roxoEscuro);
+  doc.text('ORDENS DE SERVICO URGENTES', 14, y);
+  y += 8;
+
+  doc.setFillColor(...roxo);
+  doc.rect(14, y, 182, 8, 'F');
+  doc.setTextColor(...branco);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.text('KM', 17, y + 5.5);
+  doc.text('AREA', 40, y + 5.5);
+  doc.text('METODO', 110, y + 5.5);
+  doc.text('EQUIPES', 155, y + 5.5);
+  doc.text('PRAZO', 178, y + 5.5);
+  y += 8;
+
+  urgentes.slice(0, 13).forEach((o, i) => {
+    doc.setFillColor(...(i % 2 === 0 ? [254, 242, 242] : branco));
+    doc.rect(14, y, 182, 8, 'F');
+    doc.setTextColor(...cinzaTexto);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    const km = (o.km / 1000).toFixed(1).replace('.', '+');
+    doc.text(`KM ${km}`, 17, y + 5.5);
+    doc.text(o.area.replace('Canteiro ', ''), 40, y + 5.5);
+    doc.text(o.metodo.replace('Rocada ', ''), 110, y + 5.5);
+    doc.text(String(o.equipes_necessarias), 163, y + 5.5);
+    doc.text(o.prazo, 178, y + 5.5);
+    y += 8;
+  });
+
+  // Rodapé
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
+    doc.setPage(i);
+    doc.setFillColor(...roxo);
+    doc.rect(0, 282, 210, 15, 'F');
+    doc.setTextColor(...branco);
+    doc.setFontSize(7);
+    doc.setFont('helvetica', 'normal');
+    doc.text('VegeTrack — Sistema Inteligente de Monitoramento de Vegetacao', 14, 289);
+    doc.text('Base legal: ARTESP Anexo 6 + ANTT PER — limite maximo 30cm faixa de dominio', 14, 293);
+    doc.text(`Pagina ${i} de ${totalPages}`, 185, 289, { align: 'right' });
+    doc.text('Documento gerado automaticamente', 185, 293, { align: 'right' });
+  }
+
+  doc.save(`VegeTrack_Conformidade_${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
 export default function Resumo() {
   const [resumo, setResumo] = useState(null);
   const [conformidade, setConformidade] = useState(null);
   const [ordens, setOrdens] = useState([]);
   const [fauna, setFauna] = useState(null);
   const [previsao, setPrevisao] = useState([]);
+  const [gerando, setGerando] = useState(false);
 
   useEffect(() => {
     fetch(`${API}/resumo`).then(r => r.json()).then(setResumo);
@@ -62,6 +266,15 @@ export default function Resumo() {
     { label: 'COM CRESCIMENTO', value: resumo.com_crescimento, unit: null, sub: 'Vegetação aumentando', accent: '#fde68a', trend: '▲ monitorar', trendColor: '#fde68a' },
   ];
 
+  const handleGerarPDF = async () => {
+    setGerando(true);
+    try {
+      await gerarPDF({ resumo, conformidade, ordens, fauna, indice, indiceInfo, hoje });
+    } finally {
+      setGerando(false);
+    }
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
@@ -69,6 +282,21 @@ export default function Resumo() {
           <h1 className="page-title">Resumo Executivo</h1>
           <p className="page-subtitle">Gerado automaticamente em {hoje}</p>
         </div>
+        <button
+          onClick={handleGerarPDF}
+          disabled={gerando}
+          style={{
+            background: gerando ? '#a78bfa' : 'linear-gradient(135deg, #5B0FBE 0%, #3b0f8c 100%)',
+            color: '#fff', border: 'none', borderRadius: 10,
+            padding: '10px 20px', fontSize: 13, fontWeight: 700,
+            cursor: gerando ? 'not-allowed' : 'pointer',
+            display: 'flex', alignItems: 'center', gap: 8,
+            boxShadow: '0 2px 8px rgba(91,15,190,0.30)',
+            transition: 'all 0.15s'
+          }}
+        >
+          {gerando ? '⏳ Gerando...' : '📄 Exportar Relatório PDF'}
+        </button>
       </div>
 
       {/* Índice de Saúde */}
