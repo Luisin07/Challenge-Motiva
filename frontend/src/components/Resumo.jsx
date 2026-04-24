@@ -5,46 +5,19 @@ const API = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 function calcularIndice(conformidade, resumo, fauna) {
   let score = 100;
-
-  // Conformidade abaixo de 95% penaliza bastante
   if (conformidade.conformidade_geral < 95) score -= 30;
   else if (conformidade.conformidade_geral < 98) score -= 15;
-
-  // Trechos críticos (máx -20)
   score -= Math.min(resumo.criticos * 2, 20);
-
-  // Trechos com crescimento (máx -15)
   score -= Math.min(resumo.com_crescimento, 15);
-
-  // Status ambiental crítico ou alto
   if (fauna.restricao.nivel === 'CRITICO') score -= 10;
   else if (fauna.restricao.nivel === 'ALTO') score -= 5;
-
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
 function getIndiceInfo(score) {
-  if (score >= 80) return {
-    label: 'Saudável',
-    icone: '✅',
-    cor: '#16a34a',
-    accent: '#6ee7b7',
-    bg: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)',
-  };
-  if (score >= 60) return {
-    label: 'Zona de Atenção',
-    icone: '⚠️',
-    cor: '#ca8a04',
-    accent: '#fde68a',
-    bg: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)',
-  };
-  return {
-    label: 'Situação Crítica',
-    icone: '🚨',
-    cor: '#ef4444',
-    accent: '#fca5a5',
-    bg: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)',
-  };
+  if (score >= 80) return { label: 'Saudável', icone: '✅', accent: '#6ee7b7' };
+  if (score >= 60) return { label: 'Zona de Atenção', icone: '⚠️', accent: '#fde68a' };
+  return { label: 'Situação Crítica', icone: '🚨', accent: '#fca5a5' };
 }
 
 export default function Resumo() {
@@ -71,17 +44,23 @@ export default function Resumo() {
   const indice = calcularIndice(conformidade, resumo, fauna);
   const indiceInfo = getIndiceInfo(indice);
 
+  const fatores = [];
+  if (conformidade.violacoes_iminentes > 0) fatores.push(`${conformidade.violacoes_iminentes} violações iminentes ARTESP/ANTT`);
+  if (resumo.criticos > 0) fatores.push(`${resumo.criticos} trechos em nível crítico (${((resumo.criticos / resumo.total_trechos) * 100).toFixed(1)}% do total)`);
+  if (resumo.com_crescimento > 0) fatores.push(`${resumo.com_crescimento} trechos com vegetação crescendo`);
+
   const URGENCIA_COR = {
     'ALTA':  { bg: '#fef2f2', border: '#ef4444', text: '#ef4444', badge: '#ef4444' },
     'MEDIA': { bg: '#fff7ed', border: '#f97316', text: '#f97316', badge: '#f97316' },
     'BAIXA': { bg: '#fefce8', border: '#ca8a04', text: '#ca8a04', badge: '#ca8a04' },
   };
 
-  // Fatores que estão puxando o score para baixo
-  const fatores = [];
-  if (conformidade.violacoes_iminentes > 0) fatores.push(`${conformidade.violacoes_iminentes} violações iminentes ARTESP/ANTT`);
-  if (resumo.criticos > 0) fatores.push(`${resumo.criticos} trechos em nível crítico (${((resumo.criticos / resumo.total_trechos) * 100).toFixed(1)}% do total)`);
-  if (resumo.com_crescimento > 0) fatores.push(`${resumo.com_crescimento} trechos com vegetação crescendo`);
+  const cards = [
+    { label: 'CONFORMIDADE', value: conformidade.conformidade_geral, unit: '%', sub: 'Geral ARTESP/ANTT', accent: conformidade.conformidade_geral >= 95 ? '#6ee7b7' : '#fca5a5', trend: conformidade.conformidade_geral >= 95 ? '● dentro do limite' : '▼ abaixo do alvo', trendColor: conformidade.conformidade_geral >= 95 ? '#6ee7b7' : '#fca5a5' },
+    { label: 'TRECHOS CRÍTICOS', value: resumo.criticos, unit: null, sub: 'Requerem intervenção', accent: '#fca5a5', trend: '▲ em alta', trendColor: '#fca5a5' },
+    { label: 'ORDENS URGENTES', value: urgentes, unit: null, sub: 'Prazo 48 horas', accent: '#fca5a5', trend: urgentes > 0 ? '▲ ação necessária' : '● ok', trendColor: urgentes > 0 ? '#fca5a5' : '#6ee7b7' },
+    { label: 'COM CRESCIMENTO', value: resumo.com_crescimento, unit: null, sub: 'Vegetação aumentando', accent: '#fde68a', trend: '▲ monitorar', trendColor: '#fde68a' },
+  ];
 
   return (
     <div>
@@ -92,21 +71,17 @@ export default function Resumo() {
         </div>
       </div>
 
-      {/* Índice de Saúde do Rodoanel */}
+      {/* Índice de Saúde */}
       <div style={{
-        background: indiceInfo.bg,
+        background: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)',
         borderRadius: 14, marginBottom: 24,
         boxShadow: '0 2px 12px rgba(91,15,190,0.20)',
         overflow: 'hidden', position: 'relative'
       }}>
         <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: indiceInfo.accent + '15', pointerEvents: 'none' }} />
-
         <div style={{ padding: '20px 24px', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 24, alignItems: 'center' }}>
-          {/* Score */}
           <div style={{ textAlign: 'center', minWidth: 100 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: '#ffffff66', textTransform: 'uppercase', marginBottom: 6 }}>
-              ÍNDICE DE SAÚDE
-            </p>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: '#ffffff66', textTransform: 'uppercase', marginBottom: 6 }}>ÍNDICE DE SAÚDE</p>
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center', gap: 4 }}>
               <span style={{ fontSize: 56, fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: -2 }}>{indice}</span>
               <span style={{ fontSize: 20, fontWeight: 600, color: '#ffffff66' }}>/100</span>
@@ -116,12 +91,8 @@ export default function Resumo() {
               <span style={{ fontSize: 13, fontWeight: 700, color: indiceInfo.accent }}>{indiceInfo.label}</span>
             </div>
           </div>
-
-          {/* Divisor */}
           <div style={{ borderLeft: '1px solid #ffffff20', paddingLeft: 24 }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: '#ffffff66', textTransform: 'uppercase', marginBottom: 12 }}>
-              FATORES DE IMPACTO
-            </p>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: '#ffffff66', textTransform: 'uppercase', marginBottom: 12 }}>FATORES DE IMPACTO</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {fatores.length > 0 ? fatores.map((f, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -134,44 +105,31 @@ export default function Resumo() {
             </div>
           </div>
         </div>
-
-        {/* Barra de progresso */}
         <div style={{ height: 6, background: '#ffffff15' }}>
-          <div style={{ height: '100%', width: `${indice}%`, background: indiceInfo.accent, transition: 'width 0.5s ease', borderRadius: '0 4px 4px 0' }} />
+          <div style={{ height: '100%', width: `${indice}%`, background: indiceInfo.accent, borderRadius: '0 4px 4px 0' }} />
         </div>
       </div>
 
-      {/* Alerta crítico */}
-      {conformidade.violacoes_iminentes > 0 && (
-        <div style={{
-          background: '#fef2f2', border: '2px solid #ef4444',
-          borderRadius: 16, padding: 20, marginBottom: 24,
-          display: 'flex', alignItems: 'center', gap: 16
-        }}>
-          <span style={{ fontSize: 28 }}>⚠️</span>
-          <div>
-            <p style={{ fontWeight: 800, fontSize: 16, color: '#ef4444' }}>
-              {conformidade.violacoes_iminentes} violações iminentes — Intervenção em 48h
-            </p>
-            <p style={{ color: '#888', fontSize: 13, marginTop: 3 }}>
-              Trechos com vegetação acima do limite ARTESP/ANTT. Risco de multa contratual.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Cards principais */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 24 }}>
-        {[
-          { label: 'Conformidade', value: `${conformidade.conformidade_geral}%`, bg: '#f0fdf4', cor: '#16a34a', desc: 'Geral ARTESP/ANTT' },
-          { label: 'Trechos Críticos', value: resumo.criticos, bg: '#fef2f2', cor: '#ef4444', desc: 'Requerem intervenção' },
-          { label: 'Ordens Urgentes', value: urgentes, bg: '#fef2f2', cor: '#ef4444', desc: 'Prazo 48 horas' },
-          { label: 'Com Crescimento', value: resumo.com_crescimento, bg: '#fefce8', cor: '#ca8a04', desc: 'Vegetação aumentando' },
-        ].map((c, i) => (
-          <div key={i} style={{ background: c.bg, borderRadius: 16, padding: 24, border: `1px solid ${c.cor}22` }}>
-            <p style={{ color: '#888', fontSize: 12, fontWeight: 500, marginBottom: 8 }}>{c.label}</p>
-            <p style={{ fontSize: 40, fontWeight: 800, color: c.cor, lineHeight: 1 }}>{c.value}</p>
-            <p style={{ color: '#aaa', fontSize: 12, marginTop: 8 }}>{c.desc}</p>
+      {/* Cards BI Motiva */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24 }}>
+        {cards.map((c, i) => (
+          <div key={i} style={{
+            background: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)',
+            borderRadius: 14, padding: '18px 20px 16px',
+            boxShadow: '0 2px 12px rgba(91,15,190,0.20)',
+            position: 'relative', overflow: 'hidden',
+          }}>
+            <div style={{ position: 'absolute', top: -20, right: -20, width: 72, height: 72, borderRadius: '50%', background: c.accent + '20', pointerEvents: 'none' }} />
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: '#ffffff66', marginBottom: 12, textTransform: 'uppercase' }}>{c.label}</p>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 10 }}>
+              <span style={{ fontSize: 34, fontWeight: 800, color: '#fff', lineHeight: 1, letterSpacing: -1 }}>{c.value}</span>
+              {c.unit && <span style={{ fontSize: 15, fontWeight: 700, color: '#ffffffbb' }}>{c.unit}</span>}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <p style={{ fontSize: 11, color: '#ffffff55' }}>{c.sub}</p>
+              <span style={{ fontSize: 10, fontWeight: 700, color: c.trendColor, whiteSpace: 'nowrap', marginLeft: 6 }}>{c.trend}</span>
+            </div>
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 3, background: c.accent, opacity: 0.8 }} />
           </div>
         ))}
       </div>
@@ -192,7 +150,6 @@ export default function Resumo() {
             </div>
           ))}
         </div>
-
         <div style={{ background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
           <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 16, color: '#1a1a2e' }}>Ordens de Serviço</h3>
           {[
