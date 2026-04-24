@@ -27,33 +27,18 @@ export default function Criticos({ filtroInicial, onClear }) {
     .filter(t => filtroNivel === 'TODOS' || t.nivel_20 === parseInt(filtroNivel))
     .filter(t => filtroArea === 'TODAS' || t.area === filtroArea);
 
-  // Header config por nível — nível 2 clean, nível 3 vermelho forte
-  const TEMA = {
-    1: {
-      headerBg: '#f0fdf4', headerBorder: '#16a34a',
-      labelBg: '#16a34a20', labelCor: '#16a34a',
-      kmCor: '#1a1a2e', areaCor: '#888',
-      label: 'Baixo'
-    },
-    2: {
-      headerBg: '#fff7ed', headerBorder: '#f97316',
-      labelBg: '#f9731620', labelCor: '#f97316',
-      kmCor: '#1a1a2e', areaCor: '#888',
-      label: 'Moderado'
-    },
-    3: {
-      headerBg: null, headerGradient: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-      labelBg: '#ffffff25', labelCor: '#fff',
-      kmCor: '#fff', areaCor: '#ffffff99',
-      label: 'Crítico'
-    },
+  // Accent por nível — todos roxos Motiva, diferenciados pela linha na base
+  const NIVEL_ACCENT = {
+    1: { accent: '#6ee7b7', label: 'Baixo',    badge: '#6ee7b720', badgeText: '#6ee7b7' },
+    2: { accent: '#fde68a', label: 'Moderado', badge: '#fde68a20', badgeText: '#fde68a' },
+    3: { accent: '#fca5a5', label: 'Crítico',  badge: '#fca5a520', badgeText: '#fca5a5' },
   };
 
   const getMensagem = (t) => {
-    if (t.nivel_20 === 3) return { icon: '🚨', texto: 'Nível máximo atingido — intervenção obrigatória', cor: '#ef4444', bg: '#fef2f2' };
-    if (t.crescimento > 0) return { icon: '⬆️', texto: 'Vegetação crescendo — intervenção necessária', cor: '#f97316', bg: '#fff7ed' };
-    if (t.crescimento < 0) return { icon: '⬇️', texto: 'Vegetação reduzindo — monitorar', cor: '#16a34a', bg: '#f0fdf4' };
-    return { icon: '➡️', texto: 'Nível estável — manter monitoramento', cor: '#888', bg: '#f5f5f7' };
+    if (t.nivel_20 === 3) return { icon: '🚨', texto: 'Nível máximo atingido — intervenção obrigatória', cor: '#fca5a5', bg: '#ffffff15' };
+    if (t.crescimento > 0) return { icon: '⬆️', texto: 'Vegetação crescendo — intervenção necessária', cor: '#fde68a', bg: '#ffffff15' };
+    if (t.crescimento < 0) return { icon: '⬇️', texto: 'Vegetação reduzindo — monitorar', cor: '#6ee7b7', bg: '#ffffff15' };
+    return { icon: '➡️', texto: 'Nível estável — manter monitoramento', cor: '#ffffff88', bg: '#ffffff10' };
   };
 
   const limparFiltro = () => {
@@ -80,11 +65,12 @@ export default function Criticos({ filtroInicial, onClear }) {
             </button>
           )}
           <div style={{
-            background: '#fef2f2', border: '1.5px solid #ef444433',
-            borderRadius: 12, padding: '12px 24px', textAlign: 'center'
+            background: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)',
+            borderRadius: 12, padding: '12px 24px', textAlign: 'center',
+            boxShadow: '0 2px 12px rgba(91,15,190,0.20)'
           }}>
-            <p style={{ fontSize: 11, color: '#888', marginBottom: 2, fontWeight: 500 }}>Total encontrado</p>
-            <p style={{ fontSize: 28, fontWeight: 800, color: '#ef4444', lineHeight: 1 }}>{filtrados.length}</p>
+            <p style={{ fontSize: 11, color: '#ffffff66', marginBottom: 2, fontWeight: 600, letterSpacing: 0.5 }}>TOTAL ENCONTRADO</p>
+            <p style={{ fontSize: 28, fontWeight: 800, color: '#fff', lineHeight: 1 }}>{filtrados.length}</p>
           </div>
         </div>
       </div>
@@ -93,7 +79,7 @@ export default function Criticos({ filtroInicial, onClear }) {
         {['TODOS', '2', '3'].map(f => (
           <button key={f} className={`filter-btn ${filtroNivel === f ? 'ativo' : ''}`}
             onClick={() => setFiltroNivel(f)}>
-            {f === 'TODOS' ? 'Todos os níveis' : `Nível ${f} — ${TEMA[parseInt(f)]?.label}`}
+            {f === 'TODOS' ? 'Todos os níveis' : `Nível ${f} — ${NIVEL_ACCENT[parseInt(f)]?.label}`}
           </button>
         ))}
       </div>
@@ -109,78 +95,75 @@ export default function Criticos({ filtroInicial, onClear }) {
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}>
         {filtrados.map((t, i) => {
-          const tema = TEMA[t.nivel_20];
+          const nivel = NIVEL_ACCENT[t.nivel_20];
           const msg = getMensagem(t);
-          const isCritico = t.nivel_20 === 3;
-
           return (
             <div key={i} style={{
-              borderRadius: 18, overflow: 'hidden',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-              background: '#fff'
+              borderRadius: 16, overflow: 'hidden',
+              boxShadow: '0 4px 20px rgba(91,15,190,0.15)',
+              background: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)',
+              position: 'relative'
             }}>
-              {/* Header — crítico com gradiente, outros com fundo claro */}
+              {/* Círculo decorativo */}
               <div style={{
-                background: isCritico ? tema.headerGradient : tema.headerBg,
-                borderLeft: isCritico ? 'none' : `4px solid ${tema.headerBorder}`,
-                padding: '20px 24px 16px'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                position: 'absolute', top: -20, right: -20,
+                width: 80, height: 80, borderRadius: '50%',
+                background: nivel.accent + '15', pointerEvents: 'none'
+              }} />
+
+              <div style={{ padding: '20px 22px 16px' }}>
+                {/* Header */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                   <div>
-                    <p style={{
-                      color: isCritico ? '#ffffff99' : '#aaa',
-                      fontSize: 11, fontWeight: 600, letterSpacing: 1, marginBottom: 4
-                    }}>
-                      RODOANEL MÁRIO COVAS
+                    <p style={{ color: '#ffffff55', fontSize: 10, fontWeight: 700, letterSpacing: 1.2, marginBottom: 4, textTransform: 'uppercase' }}>
+                      Rodoanel Mário Covas
                     </p>
-                    <p style={{
-                      color: tema.kmCor,
-                      fontSize: 26, fontWeight: 800, letterSpacing: -0.5
-                    }}>
+                    <p style={{ color: '#fff', fontSize: 26, fontWeight: 800, letterSpacing: -0.5, lineHeight: 1 }}>
                       KM {(t.km / 1000).toFixed(1).replace('.', '+')}
                     </p>
+                    <p style={{ color: '#ffffff88', fontSize: 12, marginTop: 5 }}>{t.area}</p>
                   </div>
                   <span style={{
-                    background: tema.labelBg,
-                    color: tema.labelCor,
-                    padding: '6px 14px', borderRadius: 8,
-                    fontSize: 13, fontWeight: 700
+                    background: nivel.badge,
+                    color: nivel.badgeText,
+                    padding: '5px 12px', borderRadius: 8,
+                    fontSize: 12, fontWeight: 700,
+                    border: `1px solid ${nivel.accent}40`,
+                    whiteSpace: 'nowrap'
                   }}>
                     Nível {t.nivel_20}
                   </span>
                 </div>
-                <p style={{ color: tema.areaCor, fontSize: 13, marginTop: 6 }}>{t.area}</p>
-              </div>
 
-              <div style={{ padding: '20px 24px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-                  <div>
-                    <p style={{ fontSize: 10, color: '#aaa', fontWeight: 600, letterSpacing: 0.5, marginBottom: 4 }}>
-                      NÍVEL ANTERIOR
-                    </p>
-                    <p style={{ fontSize: 22, fontWeight: 800, color: '#1a1a2e' }}>{t.nivel_13}</p>
+                {/* Métricas */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+                  <div style={{ background: '#ffffff10', borderRadius: 8, padding: '10px 12px' }}>
+                    <p style={{ fontSize: 9, color: '#ffffff55', fontWeight: 700, letterSpacing: 0.8, marginBottom: 4, textTransform: 'uppercase' }}>Nível Anterior</p>
+                    <p style={{ fontSize: 22, fontWeight: 800, color: '#fff' }}>{t.nivel_13}</p>
                   </div>
-                  <div>
-                    <p style={{ fontSize: 10, color: '#aaa', fontWeight: 600, letterSpacing: 0.5, marginBottom: 4 }}>
-                      CRESCIMENTO
-                    </p>
+                  <div style={{ background: '#ffffff10', borderRadius: 8, padding: '10px 12px' }}>
+                    <p style={{ fontSize: 9, color: '#ffffff55', fontWeight: 700, letterSpacing: 0.8, marginBottom: 4, textTransform: 'uppercase' }}>Crescimento</p>
                     <p style={{
                       fontSize: 22, fontWeight: 800,
-                      color: t.crescimento > 0 ? '#ef4444' : t.crescimento < 0 ? '#16a34a' : '#888'
+                      color: t.crescimento > 0 ? '#fca5a5' : t.crescimento < 0 ? '#6ee7b7' : '#ffffff66'
                     }}>
                       {t.crescimento > 0 ? `+${t.crescimento}` : t.crescimento === 0 ? '—' : t.crescimento}
                     </p>
                   </div>
                 </div>
 
+                {/* Status */}
                 <div style={{
-                  background: msg.bg, borderRadius: 10, padding: '10px 14px',
+                  background: msg.bg, borderRadius: 8, padding: '9px 12px',
                   display: 'flex', alignItems: 'center', gap: 8
                 }}>
-                  <span style={{ fontSize: 14 }}>{msg.icon}</span>
-                  <p style={{ fontSize: 12, fontWeight: 600, color: msg.cor }}>{msg.texto}</p>
+                  <span style={{ fontSize: 13 }}>{msg.icon}</span>
+                  <p style={{ fontSize: 11, fontWeight: 600, color: msg.cor }}>{msg.texto}</p>
                 </div>
               </div>
+
+              {/* Linha accent na base */}
+              <div style={{ height: 3, background: nivel.accent, opacity: 0.85 }} />
             </div>
           );
         })}

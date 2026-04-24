@@ -28,112 +28,149 @@ async function gerarPDF(dados) {
   const altas = ordens.filter(o => o.prioridade === 'ALTA');
 
   const W = 210;
+  const MARGIN = 14;
+  const CONTENT_W = W - MARGIN * 2;
+  const PAGE_H = 297;
+  const FOOTER_H = 18;
+  const SAFE_BOTTOM = PAGE_H - FOOTER_H - 5;
+
   const roxo = [91, 15, 190];
   const roxoEscuro = [59, 15, 140];
   const branco = [255, 255, 255];
   const cinza1 = [248, 248, 250];
-  const cinza2 = [240, 240, 245];
+  const cinza2 = [235, 235, 242];
   const cinzaTexto = [80, 80, 100];
   const cinzaLabel = [150, 150, 170];
   const vermelho = [220, 38, 38];
-  const verde = [22, 163, 74];
+
+  const desenharRodape = () => {
+    const total = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= total; i++) {
+      doc.setPage(i);
+      doc.setFillColor(...roxoEscuro);
+      doc.rect(0, PAGE_H - FOOTER_H, W, FOOTER_H, 'F');
+      doc.setFillColor(...roxo);
+      doc.rect(0, PAGE_H - FOOTER_H, 48, FOOTER_H, 'F');
+      doc.setTextColor(...branco);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text('VegeTrack', 4, PAGE_H - FOOTER_H + 6);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      doc.setTextColor(200, 180, 255);
+      doc.text('Challenge Motiva x FIAP 2026', 4, PAGE_H - FOOTER_H + 12);
+      doc.setTextColor(...branco);
+      doc.setFontSize(7.5);
+      doc.text('Base legal: ARTESP Anexo 6 + ANTT PER — limite maximo 30cm faixa de dominio', 52, PAGE_H - FOOTER_H + 6);
+      doc.setTextColor(200, 180, 255);
+      doc.text(`Pagina ${i} de ${total}  |  Documento gerado automaticamente pelo VegeTrack`, 52, PAGE_H - FOOTER_H + 12);
+    }
+  };
+
+  const checkPage = (y, needed) => {
+    if (y + needed > SAFE_BOTTOM) {
+      doc.addPage();
+      return 20;
+    }
+    return y;
+  };
 
   // ── CABEÇALHO ──
   doc.setFillColor(...roxoEscuro);
-  doc.rect(0, 0, W, 45, 'F');
-  // Faixa accent
+  doc.rect(0, 0, W, 44, 'F');
   doc.setFillColor(...roxo);
-  doc.rect(0, 38, W, 7, 'F');
-  // Linha decorativa
-  doc.setFillColor(161, 100, 255);
-  doc.rect(0, 38, 60, 7, 'F');
+  doc.rect(0, 37, W, 7, 'F');
+  doc.setFillColor(130, 60, 220);
+  doc.rect(0, 37, 55, 7, 'F');
 
   doc.setTextColor(...branco);
-  doc.setFontSize(26);
+  doc.setFontSize(24);
   doc.setFont('helvetica', 'bold');
-  doc.text('VegeTrack', 14, 20);
+  doc.text('VegeTrack', MARGIN, 19);
 
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(200, 180, 255);
-  doc.text('Sistema Inteligente de Monitoramento de Vegetacao', 14, 27);
-  doc.text('Rodoanel Mario Covas (SP-021)  —  Challenge Motiva x FIAP 2026', 14, 33);
+  doc.text('Sistema Inteligente de Monitoramento de Vegetacao', MARGIN, 27);
+  doc.text('Rodoanel Mario Covas (SP-021)  —  Challenge Motiva x FIAP 2026', MARGIN, 33);
 
   doc.setTextColor(...branco);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.text('RELATORIO DE CONFORMIDADE', W - 14, 20, { align: 'right' });
+  doc.text('RELATORIO DE CONFORMIDADE', W - MARGIN, 19, { align: 'right' });
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(200, 180, 255);
   doc.setFontSize(8);
-  doc.text(`Emitido em: ${hoje}`, W - 14, 27, { align: 'right' });
-  doc.text('Documento oficial — uso interno', W - 14, 33, { align: 'right' });
+  doc.text(`Emitido em: ${hoje}`, W - MARGIN, 27, { align: 'right' });
+  doc.text('Documento oficial — uso interno', W - MARGIN, 33, { align: 'right' });
 
-  let y = 55;
+  let y = 54;
 
   // ── ÍNDICE DE SAÚDE ──
   doc.setFillColor(...cinza1);
-  doc.roundedRect(14, y, W - 28, 38, 3, 3, 'F');
+  doc.roundedRect(MARGIN, y, CONTENT_W, 42, 3, 3, 'F');
   doc.setFillColor(...roxo);
-  doc.rect(14, y, 4, 38, 'F');
+  doc.rect(MARGIN, y, 4, 42, 'F');
 
-  // Score
-  doc.setFontSize(42);
+  doc.setFontSize(40);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...roxo);
-  doc.text(String(indice), 26, y + 22);
+  doc.text(String(indice), MARGIN + 8, y + 22);
 
-  doc.setFontSize(12);
-  doc.setTextColor(...cinzaTexto);
-  doc.text('/100', 26 + doc.getTextWidth(String(indice)) + 2, y + 22);
-
+  const scoreW = doc.getTextWidth(String(indice));
   doc.setFontSize(11);
+  doc.setTextColor(...cinzaTexto);
+  doc.text('/100', MARGIN + 8 + scoreW + 1, y + 22);
+
+  doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...indiceInfo.corRGB);
-  doc.text(indiceInfo.label, 26, y + 31);
+  doc.text(indiceInfo.label, MARGIN + 8, y + 31);
+
+  // Barra progresso
+  doc.setFillColor(...cinza2);
+  doc.roundedRect(MARGIN + 8, y + 35, 60, 3, 1, 1, 'F');
+  doc.setFillColor(...indiceInfo.corRGB);
+  const barW = Math.max(2, (60 * indice) / 100);
+  doc.roundedRect(MARGIN + 8, y + 35, barW, 3, 1, 1, 'F');
 
   // Divisor vertical
   doc.setDrawColor(...cinza2);
-  doc.setLineWidth(0.5);
-  doc.line(80, y + 6, 80, y + 32);
+  doc.setLineWidth(0.4);
+  doc.line(MARGIN + 80, y + 6, MARGIN + 80, y + 36);
 
-  // Label
+  // Label + métricas lado direito
   doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...cinzaLabel);
-  doc.text('INDICE DE SAUDE DO RODOANEL', 84, y + 8);
+  doc.text('INDICE DE SAUDE DO RODOANEL', MARGIN + 84, y + 8);
 
-  // Métricas rápidas
   const metrRapidas = [
-    [`Conformidade: ${conformidade.conformidade_geral}%`, conformidade.conformidade_geral >= 95 ? verde : vermelho],
-    [`Trechos criticos: ${resumo.criticos} / ${resumo.total_trechos}`, vermelho],
-    [`Com crescimento: ${resumo.com_crescimento} trechos`, [202, 138, 4]],
-    [`Status ambiental: ${fauna.restricao.nivel}`, cinzaTexto],
+    { txt: `Conformidade: ${conformidade.conformidade_geral}%`, cor: conformidade.conformidade_geral >= 95 ? [22,163,74] : vermelho },
+    { txt: `Trechos criticos: ${resumo.criticos} / ${resumo.total_trechos}`, cor: vermelho },
+    { txt: `Com crescimento: ${resumo.com_crescimento} trechos`, cor: [202, 138, 4] },
+    { txt: `Status ambiental: ${fauna.restricao.nivel}`, cor: cinzaTexto },
   ];
-  metrRapidas.forEach(([txt, cor], i) => {
-    const col = i < 2 ? 84 : 148;
-    const row = i < 2 ? y + 16 + (i * 9) : y + 16 + ((i - 2) * 9);
+
+  metrRapidas.forEach(({ txt, cor }, i) => {
+    const col = i < 2 ? MARGIN + 84 : MARGIN + 142;
+    const row = i < 2 ? y + 17 + (i * 10) : y + 17 + ((i - 2) * 10);
     doc.setFontSize(9);
     doc.setFont('helvetica', i === 0 ? 'bold' : 'normal');
     doc.setTextColor(...cor);
     doc.text(txt, col, row);
   });
 
-  // Barra de progresso
-  doc.setFillColor(...cinza2);
-  doc.roundedRect(14, y + 35, W - 28, 3, 1, 1, 'F');
-  doc.setFillColor(...indiceInfo.corRGB);
-  doc.roundedRect(14, y + 35, ((W - 28) * indice) / 100, 3, 1, 1, 'F');
-
-  y += 48;
+  y += 52;
 
   // ── RESUMO EXECUTIVO ──
+  y = checkPage(y, 10);
   doc.setFillColor(...roxo);
-  doc.rect(14, y, W - 28, 7, 'F');
+  doc.rect(MARGIN, y, CONTENT_W, 7, 'F');
   doc.setTextColor(...branco);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.text('RESUMO EXECUTIVO', 17, y + 5);
+  doc.text('RESUMO EXECUTIVO', MARGIN + 3, y + 5);
   y += 7;
 
   const metricas = [
@@ -148,138 +185,120 @@ async function gerarPDF(dados) {
   ];
 
   metricas.forEach(([label, valor], i) => {
+    y = checkPage(y, 8);
     doc.setFillColor(...(i % 2 === 0 ? cinza1 : branco));
-    doc.rect(14, y, W - 28, 8, 'F');
+    doc.rect(MARGIN, y, CONTENT_W, 8, 'F');
     doc.setFontSize(8.5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...cinzaTexto);
-    doc.text(label, 17, y + 5.5);
+    doc.text(label, MARGIN + 3, y + 5.5);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(...roxo);
-    doc.text(valor, W - 16, y + 5.5, { align: 'right' });
+    doc.text(valor, W - MARGIN - 2, y + 5.5, { align: 'right' });
     y += 8;
   });
 
   y += 8;
 
-  // ── VIOLAÇÕES IMINENTES ──
+  // ── VIOLAÇÕES ──
+  y = checkPage(y, 16);
   doc.setFillColor(...roxo);
-  doc.rect(14, y, W - 28, 7, 'F');
+  doc.rect(MARGIN, y, CONTENT_W, 7, 'F');
   doc.setTextColor(...branco);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.text('VIOLACOES IMINENTES — ARTESP/ANTT', 17, y + 5);
-  doc.text(String(conformidade.violacoes_iminentes), W - 16, y + 5, { align: 'right' });
+  doc.text('VIOLACOES IMINENTES — ARTESP/ANTT', MARGIN + 3, y + 5);
+  doc.text(String(conformidade.violacoes_iminentes), W - MARGIN - 2, y + 5, { align: 'right' });
   y += 7;
 
+  y = checkPage(y, 8);
   doc.setFillColor(254, 242, 242);
-  doc.rect(14, y, W - 28, 8, 'F');
+  doc.rect(MARGIN, y, CONTENT_W, 8, 'F');
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'normal');
   doc.setTextColor(...vermelho);
-  doc.text('Vegetacao acima do limite de 30cm. Intervencao obrigatoria em ate 48 horas para evitar infracao ARTESP/ANTT.', 17, y + 5.5);
+  doc.text('Vegetacao acima do limite de 30cm. Intervencao obrigatoria em ate 48h para evitar infracao ARTESP/ANTT.', MARGIN + 3, y + 5.5);
   y += 8;
 
-  // Header tabela violações
+  y = checkPage(y, 7);
   doc.setFillColor(...cinza2);
-  doc.rect(14, y, W - 28, 7, 'F');
+  doc.rect(MARGIN, y, CONTENT_W, 7, 'F');
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...cinzaTexto);
-  doc.text('KM', 17, y + 5);
-  doc.text('AREA', 38, y + 5);
-  doc.text('SITUACAO', 115, y + 5);
-  doc.text('PRAZO', 163, y + 5);
-  doc.text('MULTA', W - 16, y + 5, { align: 'right' });
+  doc.text('KM', MARGIN + 3, y + 5);
+  doc.text('AREA', MARGIN + 22, y + 5);
+  doc.text('SITUACAO', MARGIN + 100, y + 5);
+  doc.text('PRAZO', MARGIN + 142, y + 5);
+  doc.text('MULTA', W - MARGIN - 2, y + 5, { align: 'right' });
   y += 7;
 
   const violacoes = conformidade.trechos.filter(t => t.situacao === 'VIOLACAO IMINENTE');
-  violacoes.slice(0, 13).forEach((t, i) => {
+  violacoes.forEach((t, i) => {
+    y = checkPage(y, 7);
     doc.setFillColor(...(i % 2 === 0 ? cinza1 : branco));
-    doc.rect(14, y, W - 28, 7, 'F');
+    doc.rect(MARGIN, y, CONTENT_W, 7, 'F');
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...cinzaTexto);
-    const km = (t.km / 1000).toFixed(1).replace('.', '+');
-    doc.text(`KM ${km}`, 17, y + 5);
-    doc.text(t.area.replace('Canteiro ', ''), 38, y + 5);
+    doc.text(`KM ${(t.km / 1000).toFixed(1).replace('.', '+')}`, MARGIN + 3, y + 5);
+    doc.text(t.area.replace('Canteiro ', '').substring(0, 30), MARGIN + 22, y + 5);
     doc.setTextColor(...vermelho);
     doc.setFont('helvetica', 'bold');
-    doc.text(t.situacao, 115, y + 5);
+    doc.text('VIOLACAO IMINENTE', MARGIN + 100, y + 5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...cinzaTexto);
-    doc.text(t.prazo_legal, 163, y + 5);
+    doc.text(t.prazo_legal, MARGIN + 142, y + 5);
     doc.setTextColor(...vermelho);
     doc.setFont('helvetica', 'bold');
-    doc.text(t.risco_multa, W - 16, y + 5, { align: 'right' });
+    doc.text(t.risco_multa, W - MARGIN - 2, y + 5, { align: 'right' });
     y += 7;
   });
 
-  y += 8;
-
-  // Nova página se necessário
-  if (y > 230) { doc.addPage(); y = 20; }
+  y += 10;
 
   // ── ORDENS URGENTES ──
+  y = checkPage(y, 16);
   doc.setFillColor(...roxo);
-  doc.rect(14, y, W - 28, 7, 'F');
+  doc.rect(MARGIN, y, CONTENT_W, 7, 'F');
   doc.setTextColor(...branco);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.text('ORDENS DE SERVICO URGENTES (48H)', 17, y + 5);
-  doc.text(String(urgentes.length), W - 16, y + 5, { align: 'right' });
+  doc.text('ORDENS DE SERVICO URGENTES (48H)', MARGIN + 3, y + 5);
+  doc.text(String(urgentes.length), W - MARGIN - 2, y + 5, { align: 'right' });
   y += 7;
 
-  // Header tabela ordens
+  y = checkPage(y, 7);
   doc.setFillColor(...cinza2);
-  doc.rect(14, y, W - 28, 7, 'F');
+  doc.rect(MARGIN, y, CONTENT_W, 7, 'F');
   doc.setFontSize(7.5);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(...cinzaTexto);
-  doc.text('KM', 17, y + 5);
-  doc.text('AREA', 38, y + 5);
-  doc.text('METODO', 100, y + 5);
-  doc.text('EQUIPES', 148, y + 5);
-  doc.text('EPI', 168, y + 5);
+  doc.text('KM', MARGIN + 3, y + 5);
+  doc.text('AREA', MARGIN + 22, y + 5);
+  doc.text('METODO', MARGIN + 85, y + 5);
+  doc.text('EQUIPES', MARGIN + 130, y + 5);
+  doc.text('PRAZO', W - MARGIN - 2, y + 5, { align: 'right' });
   y += 7;
 
-  urgentes.slice(0, 13).forEach((o, i) => {
+  urgentes.forEach((o, i) => {
+    y = checkPage(y, 7);
     doc.setFillColor(...(i % 2 === 0 ? cinza1 : branco));
-    doc.rect(14, y, W - 28, 7, 'F');
+    doc.rect(MARGIN, y, CONTENT_W, 7, 'F');
     doc.setFontSize(7.5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...cinzaTexto);
-    const km = (o.km / 1000).toFixed(1).replace('.', '+');
-    doc.text(`KM ${km}`, 17, y + 5);
-    doc.text(o.area.replace('Canteiro ', '').substring(0, 28), 38, y + 5);
-    doc.text(o.metodo.replace('Rocada ', ''), 100, y + 5);
-    doc.text(`${o.equipes_necessarias} equipe(s)`, 148, y + 5);
-    doc.text(o.epi.substring(0, 22), 168, y + 5);
+    doc.text(`KM ${(o.km / 1000).toFixed(1).replace('.', '+')}`, MARGIN + 3, y + 5);
+    doc.text(o.area.replace('Canteiro ', '').substring(0, 28), MARGIN + 22, y + 5);
+    doc.text(o.metodo.replace('Rocada ', ''), MARGIN + 85, y + 5);
+    doc.text(`${o.equipes_necessarias} equipe(s)`, MARGIN + 130, y + 5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...roxo);
+    doc.text(o.prazo, W - MARGIN - 2, y + 5, { align: 'right' });
     y += 7;
   });
 
-  // ── RODAPÉ ──
-  const totalPages = doc.internal.getNumberOfPages();
-  for (let i = 1; i <= totalPages; i++) {
-    doc.setPage(i);
-    doc.setFillColor(...roxoEscuro);
-    doc.rect(0, 280, W, 17, 'F');
-    doc.setFillColor(...roxo);
-    doc.rect(0, 280, 50, 17, 'F');
-    doc.setTextColor(...branco);
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'bold');
-    doc.text('VegeTrack', 5, 287);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(200, 180, 255);
-    doc.text('Challenge Motiva x FIAP 2026', 5, 292);
-    doc.setTextColor(...branco);
-    doc.text('Base legal: ARTESP Anexo 6 + ANTT PER — limite maximo 30cm faixa de dominio', 55, 287);
-    doc.setTextColor(200, 180, 255);
-    doc.text(`Pagina ${i} de ${totalPages}  |  Documento gerado automaticamente pelo VegeTrack`, 55, 292);
-  }
-
+  desenharRodape();
   doc.save(`VegeTrack_Conformidade_${new Date().toISOString().split('T')[0]}.pdf`);
 }
 
@@ -342,35 +361,18 @@ export default function Resumo() {
           <h1 className="page-title">Resumo Executivo</h1>
           <p className="page-subtitle">Gerado automaticamente em {hoje}</p>
         </div>
-        {/* Botão refinado — outline roxo */}
         <button
+          className="btn-primary"
           onClick={handleGerarPDF}
           disabled={gerando}
-          style={{
-            background: gerando ? 'transparent' : '#fff',
-            color: gerando ? '#a78bfa' : '#5B0FBE',
-            border: `2px solid ${gerando ? '#a78bfa' : '#5B0FBE'}`,
-            borderRadius: 10,
-            padding: '10px 20px', fontSize: 13, fontWeight: 700,
-            cursor: gerando ? 'not-allowed' : 'pointer',
-            display: 'flex', alignItems: 'center', gap: 8,
-            transition: 'all 0.15s',
-            letterSpacing: 0.3,
-          }}
-          onMouseEnter={e => { if (!gerando) { e.currentTarget.style.background = '#5B0FBE'; e.currentTarget.style.color = '#fff'; } }}
-          onMouseLeave={e => { if (!gerando) { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#5B0FBE'; } }}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, opacity: gerando ? 0.7 : 1, cursor: gerando ? 'not-allowed' : 'pointer' }}
         >
-          {gerando ? '⏳ Gerando PDF...' : '📄 Exportar Relatório PDF'}
+          {gerando ? '⏳ Gerando...' : '📄 Exportar Relatório PDF'}
         </button>
       </div>
 
       {/* Índice de Saúde */}
-      <div style={{
-        background: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)',
-        borderRadius: 14, marginBottom: 24,
-        boxShadow: '0 2px 12px rgba(91,15,190,0.20)',
-        overflow: 'hidden', position: 'relative'
-      }}>
+      <div style={{ background: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)', borderRadius: 14, marginBottom: 24, boxShadow: '0 2px 12px rgba(91,15,190,0.20)', overflow: 'hidden', position: 'relative' }}>
         <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: indiceInfo.accent + '15', pointerEvents: 'none' }} />
         <div style={{ padding: '20px 24px', display: 'grid', gridTemplateColumns: 'auto 1fr', gap: 24, alignItems: 'center' }}>
           <div style={{ textAlign: 'center', minWidth: 100 }}>
@@ -392,9 +394,7 @@ export default function Resumo() {
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: indiceInfo.accent, flexShrink: 0 }} />
                   <p style={{ fontSize: 13, color: '#ffffffcc', fontWeight: 500 }}>{f}</p>
                 </div>
-              )) : (
-                <p style={{ fontSize: 13, color: '#ffffffcc' }}>Nenhum fator crítico identificado.</p>
-              )}
+              )) : <p style={{ fontSize: 13, color: '#ffffffcc' }}>Nenhum fator crítico identificado.</p>}
             </div>
           </div>
         </div>
@@ -403,15 +403,10 @@ export default function Resumo() {
         </div>
       </div>
 
-      {/* Cards BI Motiva */}
+      {/* Cards BI */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24 }}>
         {cards.map((c, i) => (
-          <div key={i} style={{
-            background: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)',
-            borderRadius: 14, padding: '18px 20px 16px',
-            boxShadow: '0 2px 12px rgba(91,15,190,0.20)',
-            position: 'relative', overflow: 'hidden',
-          }}>
+          <div key={i} style={{ background: 'linear-gradient(145deg, #3b0f8c 0%, #5B0FBE 100%)', borderRadius: 14, padding: '18px 20px 16px', boxShadow: '0 2px 12px rgba(91,15,190,0.20)', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', top: -20, right: -20, width: 72, height: 72, borderRadius: '50%', background: c.accent + '20', pointerEvents: 'none' }} />
             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: 1.5, color: '#ffffff66', marginBottom: 12, textTransform: 'uppercase' }}>{c.label}</p>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 4, marginBottom: 10 }}>
@@ -427,7 +422,7 @@ export default function Resumo() {
         ))}
       </div>
 
-      {/* Duas colunas */}
+      {/* Detalhes */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
         <div style={{ background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
           <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 16, color: '#1a1a2e' }}>Situação Geral</h3>
@@ -477,9 +472,7 @@ export default function Resumo() {
               return (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: cor.bg, border: `1px solid ${cor.border}22`, borderRadius: 12, padding: '12px 16px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                    <span style={{ background: cor.badge, color: '#fff', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0 }}>
-                      {i + 1}
-                    </span>
+                    <span style={{ background: cor.badge, color: '#fff', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, flexShrink: 0 }}>{i + 1}</span>
                     <div>
                       <p style={{ fontWeight: 700, fontSize: 14, color: '#1a1a2e' }}>KM {(p.km / 1000).toFixed(1).replace('.', '+')}</p>
                       <p style={{ fontSize: 12, color: '#888', marginTop: 2 }}>{p.area}</p>
