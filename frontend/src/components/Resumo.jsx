@@ -15,84 +15,126 @@ function calcularIndice(conformidade, resumo, fauna) {
 }
 
 function getIndiceInfo(score) {
-  if (score >= 80) return { label: 'Saudável', icone: '✅', accent: '#6ee7b7' };
-  if (score >= 60) return { label: 'Zona de Atenção', icone: '⚠️', accent: '#fde68a' };
-  return { label: 'Situação Crítica', icone: '🚨', accent: '#fca5a5' };
+  if (score >= 80) return { label: 'Saudável', icone: '✅', accent: '#6ee7b7', corRGB: [22, 163, 74] };
+  if (score >= 60) return { label: 'Zona de Atenção', icone: '⚠️', accent: '#fde68a', corRGB: [202, 138, 4] };
+  return { label: 'Situação Crítica', icone: '🚨', accent: '#fca5a5', corRGB: [220, 38, 38] };
 }
 
 async function gerarPDF(dados) {
   const { default: jsPDF } = await import('jspdf');
-  const doc = new jsPDF();
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const { resumo, conformidade, ordens, fauna, indice, indiceInfo, hoje } = dados;
   const urgentes = ordens.filter(o => o.prioridade === 'URGENTE');
+  const altas = ordens.filter(o => o.prioridade === 'ALTA');
 
+  const W = 210;
   const roxo = [91, 15, 190];
   const roxoEscuro = [59, 15, 140];
   const branco = [255, 255, 255];
-  const cinzaClaro = [245, 245, 247];
-  const cinzaTexto = [100, 100, 100];
+  const cinza1 = [248, 248, 250];
+  const cinza2 = [240, 240, 245];
+  const cinzaTexto = [80, 80, 100];
+  const cinzaLabel = [150, 150, 170];
   const vermelho = [220, 38, 38];
   const verde = [22, 163, 74];
 
-  // Cabeçalho
+  // ── CABEÇALHO ──
   doc.setFillColor(...roxoEscuro);
-  doc.rect(0, 0, 210, 40, 'F');
+  doc.rect(0, 0, W, 45, 'F');
+  // Faixa accent
   doc.setFillColor(...roxo);
-  doc.rect(0, 35, 210, 8, 'F');
+  doc.rect(0, 38, W, 7, 'F');
+  // Linha decorativa
+  doc.setFillColor(161, 100, 255);
+  doc.rect(0, 38, 60, 7, 'F');
 
   doc.setTextColor(...branco);
-  doc.setFontSize(22);
+  doc.setFontSize(26);
   doc.setFont('helvetica', 'bold');
-  doc.text('VegeTrack', 14, 18);
+  doc.text('VegeTrack', 14, 20);
 
-  doc.setFontSize(10);
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text('Sistema Inteligente de Monitoramento de Vegetacao', 14, 26);
-  doc.text('Rodoanel Mario Covas (SP-021) — Challenge Motiva x FIAP 2026', 14, 32);
+  doc.setTextColor(200, 180, 255);
+  doc.text('Sistema Inteligente de Monitoramento de Vegetacao', 14, 27);
+  doc.text('Rodoanel Mario Covas (SP-021)  —  Challenge Motiva x FIAP 2026', 14, 33);
 
-  doc.setFontSize(10);
-  doc.text(`Emitido em: ${hoje}`, 150, 20);
-  doc.text('Documento oficial de conformidade', 150, 26);
-
-  // Índice de saúde
-  doc.setFillColor(...cinzaClaro);
-  doc.rect(14, 50, 182, 36, 'F');
-
-  doc.setTextColor(...roxo);
+  doc.setTextColor(...branco);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'bold');
-  doc.text('INDICE DE SAUDE DO RODOANEL', 14, 58);
+  doc.text('RELATORIO DE CONFORMIDADE', W - 14, 20, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(200, 180, 255);
+  doc.setFontSize(8);
+  doc.text(`Emitido em: ${hoje}`, W - 14, 27, { align: 'right' });
+  doc.text('Documento oficial — uso interno', W - 14, 33, { align: 'right' });
 
-  doc.setFontSize(36);
+  let y = 55;
+
+  // ── ÍNDICE DE SAÚDE ──
+  doc.setFillColor(...cinza1);
+  doc.roundedRect(14, y, W - 28, 38, 3, 3, 'F');
+  doc.setFillColor(...roxo);
+  doc.rect(14, y, 4, 38, 'F');
+
+  // Score
+  doc.setFontSize(42);
+  doc.setFont('helvetica', 'bold');
   doc.setTextColor(...roxo);
-  doc.text(`${indice}`, 14, 78);
+  doc.text(String(indice), 26, y + 22);
 
   doc.setFontSize(12);
   doc.setTextColor(...cinzaTexto);
-  doc.text('/100', 38, 78);
+  doc.text('/100', 26 + doc.getTextWidth(String(indice)) + 2, y + 22);
 
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...(indice >= 80 ? verde : indice >= 60 ? [202, 138, 4] : vermelho));
-  doc.text(indiceInfo.label, 55, 72);
+  doc.setTextColor(...indiceInfo.corRGB);
+  doc.text(indiceInfo.label, 26, y + 31);
 
-  doc.setFontSize(9);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...cinzaTexto);
-  doc.text(`Conformidade geral: ${conformidade.conformidade_geral}%`, 55, 80);
-  doc.text(`Trechos criticos: ${resumo.criticos} de ${resumo.total_trechos} monitorados`, 120, 72);
-  doc.text(`Com crescimento: ${resumo.com_crescimento} trechos`, 120, 80);
-
-  // Linha divisória
-  doc.setDrawColor(...roxo);
+  // Divisor vertical
+  doc.setDrawColor(...cinza2);
   doc.setLineWidth(0.5);
-  doc.line(14, 92, 196, 92);
+  doc.line(80, y + 6, 80, y + 32);
 
-  // Resumo de métricas
-  doc.setFontSize(11);
+  // Label
+  doc.setFontSize(7);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...roxoEscuro);
-  doc.text('RESUMO EXECUTIVO', 14, 102);
+  doc.setTextColor(...cinzaLabel);
+  doc.text('INDICE DE SAUDE DO RODOANEL', 84, y + 8);
+
+  // Métricas rápidas
+  const metrRapidas = [
+    [`Conformidade: ${conformidade.conformidade_geral}%`, conformidade.conformidade_geral >= 95 ? verde : vermelho],
+    [`Trechos criticos: ${resumo.criticos} / ${resumo.total_trechos}`, vermelho],
+    [`Com crescimento: ${resumo.com_crescimento} trechos`, [202, 138, 4]],
+    [`Status ambiental: ${fauna.restricao.nivel}`, cinzaTexto],
+  ];
+  metrRapidas.forEach(([txt, cor], i) => {
+    const col = i < 2 ? 84 : 148;
+    const row = i < 2 ? y + 16 + (i * 9) : y + 16 + ((i - 2) * 9);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', i === 0 ? 'bold' : 'normal');
+    doc.setTextColor(...cor);
+    doc.text(txt, col, row);
+  });
+
+  // Barra de progresso
+  doc.setFillColor(...cinza2);
+  doc.roundedRect(14, y + 35, W - 28, 3, 1, 1, 'F');
+  doc.setFillColor(...indiceInfo.corRGB);
+  doc.roundedRect(14, y + 35, ((W - 28) * indice) / 100, 3, 1, 1, 'F');
+
+  y += 48;
+
+  // ── RESUMO EXECUTIVO ──
+  doc.setFillColor(...roxo);
+  doc.rect(14, y, W - 28, 7, 'F');
+  doc.setTextColor(...branco);
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'bold');
+  doc.text('RESUMO EXECUTIVO', 17, y + 5);
+  y += 7;
 
   const metricas = [
     ['Extensao monitorada', '29,3 km'],
@@ -101,123 +143,141 @@ async function gerarPDF(dados) {
     ['Violacoes iminentes (ARTESP/ANTT)', String(conformidade.violacoes_iminentes)],
     ['Risco em 7 dias', String(conformidade.risco_em_7_dias)],
     ['Ordens urgentes (48h)', String(urgentes.length)],
+    ['Ordens alta prioridade (7 dias)', String(altas.length)],
     ['Status ambiental', fauna.restricao.nivel],
   ];
 
-  let y = 110;
   metricas.forEach(([label, valor], i) => {
-    doc.setFillColor(...(i % 2 === 0 ? cinzaClaro : branco));
-    doc.rect(14, y - 5, 182, 9, 'F');
-    doc.setFontSize(9);
+    doc.setFillColor(...(i % 2 === 0 ? cinza1 : branco));
+    doc.rect(14, y, W - 28, 8, 'F');
+    doc.setFontSize(8.5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...cinzaTexto);
-    doc.text(label, 17, y);
+    doc.text(label, 17, y + 5.5);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...roxoEscuro);
-    doc.text(valor, 170, y, { align: 'right' });
-    y += 9;
+    doc.setTextColor(...roxo);
+    doc.text(valor, W - 16, y + 5.5, { align: 'right' });
+    y += 8;
   });
 
-  y += 6;
-
-  // Violações iminentes
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...roxoEscuro);
-  doc.text('VIOLACOES IMINENTES — ARTESP/ANTT', 14, y);
-  y += 6;
-
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...cinzaTexto);
-  doc.text('Trechos com vegetacao acima do limite de 30cm. Intervencao obrigatoria em ate 48 horas.', 14, y);
   y += 8;
 
-  // Header tabela
+  // ── VIOLAÇÕES IMINENTES ──
   doc.setFillColor(...roxo);
-  doc.rect(14, y, 182, 8, 'F');
+  doc.rect(14, y, W - 28, 7, 'F');
   doc.setTextColor(...branco);
-  doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
-  doc.text('KM', 17, y + 5.5);
-  doc.text('AREA', 40, y + 5.5);
-  doc.text('SITUACAO', 120, y + 5.5);
-  doc.text('PRAZO', 165, y + 5.5);
+  doc.setFont('helvetica', 'bold');
+  doc.text('VIOLACOES IMINENTES — ARTESP/ANTT', 17, y + 5);
+  doc.text(String(conformidade.violacoes_iminentes), W - 16, y + 5, { align: 'right' });
+  y += 7;
+
+  doc.setFillColor(254, 242, 242);
+  doc.rect(14, y, W - 28, 8, 'F');
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...vermelho);
+  doc.text('Vegetacao acima do limite de 30cm. Intervencao obrigatoria em ate 48 horas para evitar infracao ARTESP/ANTT.', 17, y + 5.5);
   y += 8;
+
+  // Header tabela violações
+  doc.setFillColor(...cinza2);
+  doc.rect(14, y, W - 28, 7, 'F');
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...cinzaTexto);
+  doc.text('KM', 17, y + 5);
+  doc.text('AREA', 38, y + 5);
+  doc.text('SITUACAO', 115, y + 5);
+  doc.text('PRAZO', 163, y + 5);
+  doc.text('MULTA', W - 16, y + 5, { align: 'right' });
+  y += 7;
 
   const violacoes = conformidade.trechos.filter(t => t.situacao === 'VIOLACAO IMINENTE');
-  violacoes.slice(0, 15).forEach((t, i) => {
-    doc.setFillColor(...(i % 2 === 0 ? [254, 242, 242] : branco));
-    doc.rect(14, y, 182, 8, 'F');
-    doc.setTextColor(...cinzaTexto);
-    doc.setFont('helvetica', 'normal');
+  violacoes.slice(0, 13).forEach((t, i) => {
+    doc.setFillColor(...(i % 2 === 0 ? cinza1 : branco));
+    doc.rect(14, y, W - 28, 7, 'F');
     doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...cinzaTexto);
     const km = (t.km / 1000).toFixed(1).replace('.', '+');
-    doc.text(`KM ${km}`, 17, y + 5.5);
-    doc.text(t.area.replace('Canteiro ', ''), 40, y + 5.5);
+    doc.text(`KM ${km}`, 17, y + 5);
+    doc.text(t.area.replace('Canteiro ', ''), 38, y + 5);
     doc.setTextColor(...vermelho);
     doc.setFont('helvetica', 'bold');
-    doc.text(t.situacao, 120, y + 5.5);
+    doc.text(t.situacao, 115, y + 5);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(...cinzaTexto);
-    doc.text(t.prazo_legal, 165, y + 5.5);
-    y += 8;
+    doc.text(t.prazo_legal, 163, y + 5);
+    doc.setTextColor(...vermelho);
+    doc.setFont('helvetica', 'bold');
+    doc.text(t.risco_multa, W - 16, y + 5, { align: 'right' });
+    y += 7;
   });
 
-  y += 6;
-
-  // Ordens urgentes
-  if (y > 240) {
-    doc.addPage();
-    y = 20;
-  }
-
-  doc.setFontSize(11);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...roxoEscuro);
-  doc.text('ORDENS DE SERVICO URGENTES', 14, y);
   y += 8;
 
+  // Nova página se necessário
+  if (y > 230) { doc.addPage(); y = 20; }
+
+  // ── ORDENS URGENTES ──
   doc.setFillColor(...roxo);
-  doc.rect(14, y, 182, 8, 'F');
+  doc.rect(14, y, W - 28, 7, 'F');
   doc.setTextColor(...branco);
-  doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
-  doc.text('KM', 17, y + 5.5);
-  doc.text('AREA', 40, y + 5.5);
-  doc.text('METODO', 110, y + 5.5);
-  doc.text('EQUIPES', 155, y + 5.5);
-  doc.text('PRAZO', 178, y + 5.5);
-  y += 8;
+  doc.setFont('helvetica', 'bold');
+  doc.text('ORDENS DE SERVICO URGENTES (48H)', 17, y + 5);
+  doc.text(String(urgentes.length), W - 16, y + 5, { align: 'right' });
+  y += 7;
+
+  // Header tabela ordens
+  doc.setFillColor(...cinza2);
+  doc.rect(14, y, W - 28, 7, 'F');
+  doc.setFontSize(7.5);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(...cinzaTexto);
+  doc.text('KM', 17, y + 5);
+  doc.text('AREA', 38, y + 5);
+  doc.text('METODO', 100, y + 5);
+  doc.text('EQUIPES', 148, y + 5);
+  doc.text('EPI', 168, y + 5);
+  y += 7;
 
   urgentes.slice(0, 13).forEach((o, i) => {
-    doc.setFillColor(...(i % 2 === 0 ? [254, 242, 242] : branco));
-    doc.rect(14, y, 182, 8, 'F');
-    doc.setTextColor(...cinzaTexto);
+    doc.setFillColor(...(i % 2 === 0 ? cinza1 : branco));
+    doc.rect(14, y, W - 28, 7, 'F');
+    doc.setFontSize(7.5);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
+    doc.setTextColor(...cinzaTexto);
     const km = (o.km / 1000).toFixed(1).replace('.', '+');
-    doc.text(`KM ${km}`, 17, y + 5.5);
-    doc.text(o.area.replace('Canteiro ', ''), 40, y + 5.5);
-    doc.text(o.metodo.replace('Rocada ', ''), 110, y + 5.5);
-    doc.text(String(o.equipes_necessarias), 163, y + 5.5);
-    doc.text(o.prazo, 178, y + 5.5);
-    y += 8;
+    doc.text(`KM ${km}`, 17, y + 5);
+    doc.text(o.area.replace('Canteiro ', '').substring(0, 28), 38, y + 5);
+    doc.text(o.metodo.replace('Rocada ', ''), 100, y + 5);
+    doc.text(`${o.equipes_necessarias} equipe(s)`, 148, y + 5);
+    doc.text(o.epi.substring(0, 22), 168, y + 5);
+    y += 7;
   });
 
-  // Rodapé
+  // ── RODAPÉ ──
   const totalPages = doc.internal.getNumberOfPages();
   for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
+    doc.setFillColor(...roxoEscuro);
+    doc.rect(0, 280, W, 17, 'F');
     doc.setFillColor(...roxo);
-    doc.rect(0, 282, 210, 15, 'F');
+    doc.rect(0, 280, 50, 17, 'F');
     doc.setTextColor(...branco);
-    doc.setFontSize(7);
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'bold');
+    doc.text('VegeTrack', 5, 287);
     doc.setFont('helvetica', 'normal');
-    doc.text('VegeTrack — Sistema Inteligente de Monitoramento de Vegetacao', 14, 289);
-    doc.text('Base legal: ARTESP Anexo 6 + ANTT PER — limite maximo 30cm faixa de dominio', 14, 293);
-    doc.text(`Pagina ${i} de ${totalPages}`, 185, 289, { align: 'right' });
-    doc.text('Documento gerado automaticamente', 185, 293, { align: 'right' });
+    doc.setFontSize(7);
+    doc.setTextColor(200, 180, 255);
+    doc.text('Challenge Motiva x FIAP 2026', 5, 292);
+    doc.setTextColor(...branco);
+    doc.text('Base legal: ARTESP Anexo 6 + ANTT PER — limite maximo 30cm faixa de dominio', 55, 287);
+    doc.setTextColor(200, 180, 255);
+    doc.text(`Pagina ${i} de ${totalPages}  |  Documento gerado automaticamente pelo VegeTrack`, 55, 292);
   }
 
   doc.save(`VegeTrack_Conformidade_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -282,20 +342,25 @@ export default function Resumo() {
           <h1 className="page-title">Resumo Executivo</h1>
           <p className="page-subtitle">Gerado automaticamente em {hoje}</p>
         </div>
+        {/* Botão refinado — outline roxo */}
         <button
           onClick={handleGerarPDF}
           disabled={gerando}
           style={{
-            background: gerando ? '#a78bfa' : 'linear-gradient(135deg, #5B0FBE 0%, #3b0f8c 100%)',
-            color: '#fff', border: 'none', borderRadius: 10,
+            background: gerando ? 'transparent' : '#fff',
+            color: gerando ? '#a78bfa' : '#5B0FBE',
+            border: `2px solid ${gerando ? '#a78bfa' : '#5B0FBE'}`,
+            borderRadius: 10,
             padding: '10px 20px', fontSize: 13, fontWeight: 700,
             cursor: gerando ? 'not-allowed' : 'pointer',
             display: 'flex', alignItems: 'center', gap: 8,
-            boxShadow: '0 2px 8px rgba(91,15,190,0.30)',
-            transition: 'all 0.15s'
+            transition: 'all 0.15s',
+            letterSpacing: 0.3,
           }}
+          onMouseEnter={e => { if (!gerando) { e.currentTarget.style.background = '#5B0FBE'; e.currentTarget.style.color = '#fff'; } }}
+          onMouseLeave={e => { if (!gerando) { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#5B0FBE'; } }}
         >
-          {gerando ? '⏳ Gerando...' : '📄 Exportar Relatório PDF'}
+          {gerando ? '⏳ Gerando PDF...' : '📄 Exportar Relatório PDF'}
         </button>
       </div>
 
@@ -362,7 +427,7 @@ export default function Resumo() {
         ))}
       </div>
 
-      {/* Duas colunas de detalhes */}
+      {/* Duas colunas */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
         <div style={{ background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
           <h3 style={{ fontSize: 14, fontWeight: 700, marginBottom: 16, color: '#1a1a2e' }}>Situação Geral</h3>
@@ -394,7 +459,7 @@ export default function Resumo() {
         </div>
       </div>
 
-      {/* Previsão compacta */}
+      {/* Previsão */}
       {previsao.length > 0 && (
         <div style={{ background: '#fff', borderRadius: 16, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.06)', marginBottom: 24 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
