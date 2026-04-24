@@ -233,7 +233,7 @@ async function gerarPDF(dados) {
   doc.text('MULTA', W - MARGIN - 2, y + 5, { align: 'right' });
   y += 7;
 
-  const violacoes = conformidade.trechos.filter(t => t.situacao === 'VIOLACAO IMINENTE');
+  const violacoes = conformidade.trechos.filter(t => t.situacao === 'VIOLAÇÃO IMINENTE');
   violacoes.forEach((t, i) => {
     y = checkPage(y, 7);
     doc.setFillColor(...(i % 2 === 0 ? cinza1 : branco));
